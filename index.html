@@ -165,8 +165,33 @@ button:active { transform: scale(0.96); }
 
 /* ============ 模拟测试 ============ */
 .mode-badge.blue { background: #10AEFF; }
+.mode-badge.gold { background: linear-gradient(135deg, #FFB800, #FF9500); color: #fff; }
 .hbtn.exam-submit { background: #FA5151; color: #fff; font-weight: 600; }
 .sc.ans { background: #10AEFF; color: #fff; }
+.exam-score { margin-left: auto; font-size: 11px; color: #FA9D3B; background: #FEF2E5; border-radius: 4px; padding: 2px 7px; }
+.fb-partial { background: #FFF7E6; color: #B37B1E; }
+.exam-big-score { font-size: 64px; line-height: 1.1; }
+.res-score-unit { font-size: 14px; color: #999; margin-bottom: 10px; }
+.rv-score { color: #B37B1E; }
+/* 必过进度 */
+.pass-box { background: #FFFFFF; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.05); font-size: 14px; color: #666; line-height: 1.6; }
+.pass-box b { color: #FA5151; font-size: 16px; }
+.pass-box.pass-ok { background: linear-gradient(135deg, #FFF7E0, #FFEFC2); border: 1px solid #FFD666; color: #8A6100; }
+.pass-box.pass-ok b { color: #B37400; font-size: 16px; }
+.pass-dots { display: flex; justify-content: center; gap: 8px; margin: 8px 0 4px; }
+.pass-dot { width: 14px; height: 14px; border-radius: 50%; background: #E5E5E5; display: inline-block; }
+.pass-dot.on { background: #FFB800; box-shadow: 0 0 0 2px #FFF3D6; }
+.pass-tip { font-size: 12px; color: #999; }
+/* 历史成绩 */
+.hist-box { background: #FFFFFF; border-radius: 12px; padding: 14px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.05); text-align: left; }
+.hist-title { font-size: 13px; color: #999; margin-bottom: 8px; }
+.hist-item { display: flex; align-items: center; font-size: 13px; color: #666; padding: 5px 0; border-top: 1px solid #F5F5F5; }
+.hist-item:first-of-type { border-top: none; }
+.hist-date { width: 88px; color: #999; font-size: 12px; }
+.hist-item b { font-size: 15px; color: #333; margin-left: 4px; }
+.hist-item b.hist-pass { color: #07C160; }
+.hist-max { font-size: 11px; color: #BBB; margin-left: 2px; }
+.hist-badge { margin-left: auto; font-size: 10px; background: #E8F8EF; color: #07C160; border-radius: 4px; padding: 1px 6px; font-weight: 600; }
 .rv-section { text-align: left; margin-bottom: 12px; }
 .rv-section-title { font-size: 14px; font-weight: 600; color: #666; margin: 18px 0 10px; }
 .rv-item { background: #FFFFFF; border-radius: 10px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.04); overflow: hidden; }
@@ -6416,13 +6441,17 @@ const LS_STATE = 'shuatibank_state_v1';
 const LS_IMPORTED = 'shuatibank_imported_v1';
 const TYPE_NAME = { single: '单选', multiple: '多选', judge: '判断' };
 const MODE_NAME = { seq: '顺序刷题', rand: '随机抽测', wrong: '错题攻坚', exam: '模拟测试' };
+/* 测试评分规则：单选0.5分；判断1分；多选全对1分、少选0.5分、选错0分 */
+const EXAM_SCORE = { single: 0.5, multiple: 1, judge: 1 };
+const EXAM_PASS_SCORE = 90;   /* 连续5次≥90分 → 必过 */
+const EXAM_PASS_TIMES = 5;
 const DEFAULTS = {
   seqIdx: {}, randSet: [], randIdx: 0,
   recSeq: {}, recRand: {},
   wrong: [], fav: [], streak: {},
   stats: { answered: 0, correct: 0 },
   back: false,
-  examSet: [], examIdx: 0, examAns: {}, examStart: 0, examHistory: []
+  examSet: [], examIdx: 0, examAns: {}, examJudged: {}, examStart: 0, examHistory: []
 };
 
 /* ==================== 存储（全部容错） ==================== */
@@ -6459,6 +6488,7 @@ function loadState() {
   st.examSet = Array.isArray(st.examSet) ? st.examSet.filter(function (x) { return typeof x === 'string'; }) : [];
   st.examIdx = typeof st.examIdx === 'number' ? st.examIdx : 0;
   st.examAns = (st.examAns && typeof st.examAns === 'object' && !Array.isArray(st.examAns)) ? st.examAns : {};
+  st.examJudged = (st.examJudged && typeof st.examJudged === 'object' && !Array.isArray(st.examJudged)) ? st.examJudged : {};
   st.examStart = typeof st.examStart === 'number' ? st.examStart : 0;
   st.examHistory = Array.isArray(st.examHistory) ? st.examHistory.slice(-10) : [];
   return st;
@@ -6832,6 +6862,7 @@ function startExam(forceNew) {
       .concat(examPool(['multiple', 'judge']).slice(0, 50));
     S.examIdx = 0;
     S.examAns = {};
+    S.examJudged = {};
     S.examStart = Date.now();
   }
   list = S.examSet;
@@ -6842,27 +6873,92 @@ function startExam(forceNew) {
 function examPick(letter) {
   var q = cur();
   if (!q) return;
+  if (S.examJudged[q.id]) return;  /* 判定后锁定本题 */
   var sel = (S.examAns[q.id] || []).slice();
   if (q.type === 'multiple') {
     var i = sel.indexOf(letter);
     if (i >= 0) sel.splice(i, 1); else sel.push(letter);
-  } else {
-    if (sel.length === 1 && sel[0] === letter) sel = [];  /* 再次点击取消选择 */
-    else sel = [letter];
+    if (sel.length === 0) delete S.examAns[q.id];
+    else S.examAns[q.id] = sel;
+    saveState();
+    renderExamOpts();
+    updateExamHeader();
+    renderExamSubmitBar();
+    return;
   }
-  if (sel.length === 0) delete S.examAns[q.id];
-  else S.examAns[q.id] = sel;
+  /* 单选 / 判断：点击立即判定并显示对错与正确答案 */
+  S.examAns[q.id] = [letter];
+  var corr = correctLetters(q);
+  var ok = corr.length > 0 && corr.indexOf(letter) >= 0;
+  S.examJudged[q.id] = { ok: ok, score: ok ? examItemScore(q) : 0 };
+  if (!ok) { S.streak[q.id] = 0; addWrong(q.id); }
   saveState();
-  renderExamOpts();
-  updateExamHeader();
+  render();
+  if (ok) examScheduleNext();
+}
+function examSubmitMulti() {
+  var q = cur();
+  if (!q || q.type !== 'multiple' || S.examJudged[q.id]) return;
+  var sel = (S.examAns[q.id] || []).slice();
+  if (sel.length === 0) { toast('请先选择至少一个选项'); return; }
+  var corr = correctLetters(q);
+  var score = calcMultiScore(sel, corr);
+  var ok = score >= examItemScore(q);
+  S.examJudged[q.id] = { ok: ok, score: score };
+  if (!ok) { S.streak[q.id] = 0; addWrong(q.id); }
+  saveState();
+  render();
+  if (ok) examScheduleNext();
+}
+function calcMultiScore(sel, corr) {
+  if (!sel || sel.length === 0) return 0;
+  var allValid = sel.every(function (L) { return corr.indexOf(L) >= 0; });
+  if (!allValid) return 0;            /* 选错：不给分 */
+  if (sel.length === corr.length) return EXAM_SCORE.multiple; /* 全对 1 分 */
+  return 0.5;                         /* 少选：0.5 分 */
+}
+function examItemScore(q) {
+  return EXAM_SCORE[q.type] || 1;
+}
+function examMaxScore() {
+  var m = 0;
+  list.forEach(function (id) { var q = bankMap[id]; if (q) m += examItemScore(q); });
+  return Math.round(m * 10) / 10;
+}
+function examPendingCount() {
+  var n = 0;
+  list.forEach(function (id) { if (!S.examJudged[id]) n++; });
+  return n;
+}
+function examStreak90() {
+  var n = 0;
+  for (var i = 0; i < S.examHistory.length; i++) {
+    var h = S.examHistory[i];
+    if (h && typeof h.score === 'number' && h.score >= EXAM_PASS_SCORE) n++;
+    else break;
+  }
+  return n;
+}
+function examScheduleNext() {
+  clearTimeout(autoTimer);
+  autoTimer = setTimeout(function () {
+    autoTimer = null;
+    if (mode === 'exam' && !examFinished && idx < list.length - 1) {
+      idx++;
+      saveIdx();
+      render();
+    }
+  }, 600);
 }
 function examNext() {
+  clearTimeout(autoTimer); autoTimer = null;
   if (idx >= list.length - 1) { toast('已是最后一题，请点右上角「交卷」'); return; }
   idx++;
   saveIdx();
   render();
 }
 function examPrev() {
+  clearTimeout(autoTimer); autoTimer = null;
   if (idx <= 0) return;
   idx--;
   saveIdx();
@@ -6870,13 +6966,13 @@ function examPrev() {
 }
 function examAnsweredCount() {
   var n = 0;
-  list.forEach(function (id) { if (S.examAns[id] && S.examAns[id].length > 0) n++; });
+  list.forEach(function (id) { if (S.examJudged[id]) n++; });
   return n;
 }
 function submitExam() {
-  var unanswered = list.length - examAnsweredCount();
-  if (unanswered > 0) {
-    openConfirm('确认交卷', '还有 <b>' + unanswered + '</b> 道题未作答，未答题目按错误计分。确定交卷吗？', '确定交卷', doSubmitExam);
+  var pending = examPendingCount();
+  if (pending > 0) {
+    openConfirm('确认交卷', '还有 <b>' + pending + '</b> 道题未作答/未提交，未完成题目按 0 分计。确定交卷吗？', '确定交卷', doSubmitExam);
   } else {
     doSubmitExam();
   }
@@ -6884,16 +6980,17 @@ function submitExam() {
 function doSubmitExam() {
   closeModal();
   var ok = [], bad = [], un = [];
+  var totalScore = 0, maxScore = 0;
   list.forEach(function (id) {
     var q = bankMap[id];
     if (!q) return;
-    var sel = (S.examAns[id] || []).slice().sort();
-    var corr = correctLetters(q).slice().sort();
-    if (sel.length === 0) { un.push(id); return; }
-    if (sel.join('') === corr.join('')) ok.push(id);
-    else bad.push(id);
+    maxScore += examItemScore(q);
+    var j = S.examJudged[id];
+    if (!j) { un.push(id); return; }
+    totalScore += (j.score || 0);
+    if (j.ok) ok.push(id); else bad.push(id);
   });
-  /* 计入全局统计；答错题加入错题本 */
+  /* 交卷时统一计入全局统计；答错题已在作答时加入错题本（此处幂等） */
   S.stats.answered += ok.length + bad.length;
   S.stats.correct += ok.length;
   bad.forEach(function (id) {
@@ -6901,36 +6998,35 @@ function doSubmitExam() {
     addWrong(id);
   });
   var duration = S.examStart ? Math.max(1, Math.round((Date.now() - S.examStart) / 1000)) : 0;
+  var score = Math.round(totalScore * 10) / 10;
+  var maxScoreR = Math.round(maxScore * 10) / 10;
+  var rate = maxScoreR > 0 ? Math.round(score / maxScoreR * 100) : 0;
   var record = {
     date: Date.now(),
     total: list.length,
+    score: score,
+    maxScore: maxScoreR,
     correct: ok.length,
     wrong: bad.length,
     unanswered: un.length,
-    rate: list.length > 0 ? Math.round(ok.length / list.length * 100) : 0,
+    rate: rate,
     duration: duration
   };
   S.examHistory.unshift(record);
   S.examHistory = S.examHistory.slice(0, 10);
   examResult = {
     ok: ok, bad: bad, un: un, record: record,
-    answers: JSON.parse(JSON.stringify(S.examAns))
+    answers: JSON.parse(JSON.stringify(S.examAns)),
+    judged: JSON.parse(JSON.stringify(S.examJudged))
   };
   S.examSet = [];
   S.examIdx = 0;
   S.examAns = {};
+  S.examJudged = {};
   S.examStart = 0;
   examFinished = true;
   saveState();
   render();
-}
-function examAnswerText(q) {
-  var sel = S.examAns[q.id] || [];
-  if (sel.length === 0) return '未作答';
-  if (q.type === 'judge') {
-    return sel.map(function (L) { return L === 'A' ? '正确(√)' : '错误(×)'; }).join('、');
-  }
-  return sel.join('');
 }
 function examCorrectText(q) {
   if (q.type === 'judge') return q.a === '√' ? '正确(√)' : '错误(×)';
@@ -6962,6 +7058,15 @@ function renderHome() {
   var app = document.getElementById('app');
   var acc = S.stats.answered;
   var rate = correctRate();
+  var examStreak = examStreak90();
+  var examBadge = '';
+  if (examStreak >= EXAM_PASS_TIMES) examBadge = '<span class="mode-badge gold">🏆 必过</span>';
+  else if (S.examHistory.length > 0) examBadge = '<span class="mode-badge blue">连续90+ ' + examStreak + '/' + EXAM_PASS_TIMES + '</span>';
+  else examBadge = '<span class="mode-badge blue">200题</span>';
+  var examDesc = '150单选 + 50多选/判断 · 满分125分';
+  if (S.examHistory.length > 0) {
+    examDesc = '满分' + (S.examHistory[0].maxScore || 125) + '分 · 上次 ' + S.examHistory[0].score + '分';
+  }
   app.innerHTML =
     '<div class="home">' +
     '<div class="home-head">' +
@@ -6997,9 +7102,8 @@ function renderHome() {
     '<div class="mode-arrow">›</div></div>' +
     '<div class="mode-card exam-card" onclick="startExam()">' +
     '<div class="mode-ico">📝</div>' +
-    '<div class="mode-info"><div class="mode-name">模拟测试' +
-    (S.examHistory.length > 0 ? '<span class="mode-badge blue">上次 ' + S.examHistory[0].rate + '%</span>' : '<span class="mode-badge blue">200题</span>') + '</div>' +
-    '<div class="mode-desc">150 单选 + 50 多选/判断 · 交卷出成绩</div></div>' +
+    '<div class="mode-info"><div class="mode-name">模拟测试' + examBadge + '</div>' +
+    '<div class="mode-desc">' + examDesc + '</div></div>' +
     '<div class="mode-arrow">›</div></div>' +
     '<div class="home-foot">' +
     '<button class="home-reset" onclick="openBackup()">备份 / 恢复数据</button>' +
@@ -7190,11 +7294,12 @@ function renderExam() {
   var answered = examAnsweredCount();
   var badgeCls = q.type === 'multiple' ? ' m' : (q.type === 'judge' ? ' j' : '');
   var progPct = list.length > 0 ? Math.round((idx + 1) / list.length * 100) : 0;
+  var fb = examFeedbackHtml(q);
   app.innerHTML =
     '<div class="quiz">' +
     '<div class="qheader">' +
     '<button class="hbtn gray" onclick="goHome()">‹</button>' +
-    '<div class="qtitle"><div class="qt1">📝 模拟测试</div><div class="qt2" id="examHeaderSub">第 ' + (idx + 1) + '/' + list.length + ' 题 · 已答 ' + answered + '</div></div>' +
+    '<div class="qtitle"><div class="qt1">📝 模拟测试</div><div class="qt2" id="examHeaderSub">第 ' + (idx + 1) + '/' + list.length + ' 题 · 已答 ' + answered + ' · 满分 ' + examMaxScore() + ' 分</div></div>' +
     '<div class="hbtns">' +
     '<button class="hbtn exam-submit" onclick="submitExam()">交卷</button>' +
     '</div></div>' +
@@ -7203,11 +7308,14 @@ function renderExam() {
     '<div class="qcard">' +
     '<div class="qmeta"><span class="qbadge' + badgeCls + '">' + TYPE_NAME[q.type] + '</span>' +
     '<span class="qno">第 ' + (idx + 1) + ' 题 / 共 ' + list.length + ' 题</span>' +
+    '<span class="exam-score">本题 ' + examItemScore(q) + ' 分</span>' +
     (favSet.has(q.id) ? '<span class="qfav">★ 已收藏</span>' : '') +
     '</div>' +
     '<div class="qtext">' + escapeHtml(q.q) + '</div>' +
     '<div class="opts" id="optBox"></div>' +
+    fb +
     '</div></div>' +
+    '<div class="submitbar" id="submitBar"></div>' +
     '<div class="bottombar">' +
     '<button class="bbtn" onclick="examPrev()">‹ 上一题</button>' +
     '<button class="bbtn' + (favSet.has(q.id) ? ' faved' : '') + '" id="favBtn" onclick="toggleFavExam()">' + (favSet.has(q.id) ? '★ 已收藏' : '☆ 收藏') + '</button>' +
@@ -7215,6 +7323,7 @@ function renderExam() {
     '<button class="bbtn main" onclick="examNext()">下一题 ›</button>' +
     '</div></div>';
   renderExamOpts();
+  renderExamSubmitBar();
 }
 function renderExamOpts() {
   var q = cur();
@@ -7222,21 +7331,52 @@ function renderExamOpts() {
   if (!q || !box) return;
   var opts = judgeOptions(q);
   var selAll = S.examAns[q.id] || [];
+  var judged = S.examJudged[q.id];
+  var corr = correctLetters(q);
   var html = '';
   Object.keys(opts).forEach(function (L) {
     var sel = selAll.indexOf(L) >= 0;
-    var cls = 'opt' + (sel ? ' opt-sel' : '');
+    var isAns = corr.indexOf(L) >= 0;
+    var cls = 'opt';
+    if (judged) {
+      if (isAns) cls += ' opt-ok';
+      else if (sel) cls += ' opt-bad';
+      else cls += ' opt-dim';
+    } else if (sel) {
+      cls += ' opt-sel';
+    }
+    var mark = '';
+    if (judged && isAns) mark = '<span class="opt-mark ok">✓</span>';
+    if (judged && !isAns && sel) mark = '<span class="opt-mark bad">✕</span>';
     html += '<div class="' + cls + '" onclick="examPick(\'' + L + '\')">' +
       '<span class="opt-letter">' + L + '</span>' +
-      '<span class="opt-text">' + escapeHtml(opts[L]) + '</span>' +
-      (sel ? '<span class="opt-mark" style="color:#07C160">✓</span>' : '') +
-      '</div>';
+      '<span class="opt-text">' + escapeHtml(opts[L]) + '</span>' + mark + '</div>';
   });
   box.innerHTML = html;
 }
+function examFeedbackHtml(q) {
+  var j = S.examJudged[q.id];
+  if (!j) return '';
+  var corrText = examCorrectText(q);
+  if (q.type === 'multiple') {
+    if (j.score >= examItemScore(q)) return '<div class="fb fb-ok">✓ 全部选对，得 ' + j.score + ' 分</div>';
+    if (j.score > 0) return '<div class="fb fb-partial">◐ 少选，得 ' + j.score + ' 分 · 正确答案：' + escapeHtml(corrText) + '</div>';
+    return '<div class="fb fb-bad">✗ 选错，本题 0 分 · 正确答案：' + escapeHtml(corrText) + '</div>';
+  }
+  if (j.ok) return '<div class="fb fb-ok">✓ 回答正确，得 ' + j.score + ' 分</div>';
+  return '<div class="fb fb-bad">✗ 回答错误，本题 0 分 · 正确答案：' + escapeHtml(corrText) + '</div>';
+}
+function renderExamSubmitBar() {
+  var bar = document.getElementById('submitBar');
+  if (!bar) return;
+  var q = cur();
+  if (!q || q.type !== 'multiple' || S.examJudged[q.id]) { bar.innerHTML = ''; return; }
+  var sel = S.examAns[q.id] || [];
+  bar.innerHTML = '<button class="submit-btn" onclick="examSubmitMulti()">确认提交' + (sel.length > 0 ? '（已选 ' + sel.length + ' 项）' : '') + '</button>';
+}
 function updateExamHeader() {
   var sub = document.getElementById('examHeaderSub');
-  if (sub) sub.innerHTML = '第 ' + (idx + 1) + '/' + list.length + ' 题 · 已答 ' + examAnsweredCount();
+  if (sub) sub.innerHTML = '第 ' + (idx + 1) + '/' + list.length + ' 题 · 已答 ' + examAnsweredCount() + ' · 满分 ' + examMaxScore() + ' 分';
 }
 function toggleFavExam() {
   var q = cur();
@@ -7256,12 +7396,37 @@ function renderExamResult() {
   if (!r) { goHome(); return; }
   var app = document.getElementById('app');
   var rec = r.record;
-  var rate = rec.rate;
-  var emoji = rate >= 90 ? '🏆' : rate >= 60 ? '🎉' : '💪';
-  var bigCls = 'res-big' + (rate >= 90 ? '' : (rate < 60 ? ' blue' : ''));
+  var score = rec.score;
+  var maxScore = rec.maxScore;
+  var pass = score >= EXAM_PASS_SCORE;
+  var streak = examStreak90();
+  var achieved = streak >= EXAM_PASS_TIMES;
   var mm = Math.floor(rec.duration / 60);
   var ss = rec.duration % 60;
   var durationTxt = (mm > 0 ? mm + ' 分 ' : '') + ss + ' 秒';
+  var emoji = achieved ? '🏆' : (pass ? '🎉' : '💪');
+  var bigCls = 'res-big' + (pass ? '' : ' blue');
+  /* 必过进度 */
+  var dots = '';
+  for (var i = 0; i < EXAM_PASS_TIMES; i++) {
+    dots += '<span class="pass-dot' + (i < streak ? ' on' : '') + '"></span>';
+  }
+  var streakHtml = achieved
+    ? '<div class="pass-box pass-ok">🏆 已连续 ' + EXAM_PASS_TIMES + ' 次达到 90 分以上<br><b>必过状态达成！</b>保持这个状态，考试稳过</div>'
+    : '<div class="pass-box">连续 90 分以上：<b>' + streak + ' / ' + EXAM_PASS_TIMES + '</b>' +
+      '<div class="pass-dots">' + dots + '</div>' +
+      '<div class="pass-tip">再连续 ' + (EXAM_PASS_TIMES - streak) + ' 次 90+ 即可达成「必过」</div></div>';
+  /* 历史成绩（最近5次） */
+  var histItems = S.examHistory.slice(0, 5).map(function (h) {
+    var d = new Date(h.date);
+    var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+    var dateTxt = (d.getMonth() + 1) + '/' + d.getDate() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    var ok = h.score >= EXAM_PASS_SCORE;
+    return '<div class="hist-item"><span class="hist-date">' + dateTxt + '</span>' +
+      '<b class="' + (ok ? 'hist-pass' : '') + '">' + h.score + '</b><span class="hist-max">/' + h.maxScore + ' 分</span>' +
+      (ok ? '<span class="hist-badge">90+</span>' : '') + '</div>';
+  }).join('');
+  /* 错题回顾 */
   var reviewItems = '';
   r.bad.forEach(function (id, i) {
     var q = bankMap[id];
@@ -7272,13 +7437,16 @@ function renderExamResult() {
       var isCorr = correctLetters(q).indexOf(L) >= 0;
       optHtml += '<div class="rv-opt' + (isCorr ? ' rv-ok' : '') + '"><b>' + L + '.</b> ' + escapeHtml(opts[L]) + (isCorr ? ' ✓' : '') + '</div>';
     });
+    var j = (r.judged && r.judged[id]) || null;
+    var scoreTxt = j ? ('本题得分 ' + j.score + ' 分') : '';
     reviewItems +=
       '<details class="rv-item">' +
       '<summary><span class="rv-tag">错</span>' + escapeHtml(q.q.slice(0, 42)) + (q.q.length > 42 ? '…' : '') + '</summary>' +
       '<div class="rv-body">' +
       '<div class="rv-q">' + escapeHtml(q.q) + '</div>' +
       '<div class="rv-ans">你的答案：<b class="rv-bad">' + escapeHtml(examAnswerTextOf(r, q)) + '</b></div>' +
-      '<div class="rv-ans">正确答案：<b class="rv-ok-txt">' + escapeHtml(examCorrectText(q)) + '</b></div>' +
+      '<div class="rv-ans">正确答案：<b class="rv-ok-txt">' + escapeHtml(examCorrectText(q)) + '</b>' +
+      (scoreTxt ? ' · <span class="rv-score">' + scoreTxt + '</span>' : '') + '</div>' +
       '<div class="rv-opts">' + optHtml + '</div>' +
       '</div></details>';
   });
@@ -7287,22 +7455,26 @@ function renderExamResult() {
     return q ? escapeHtml(q.q.slice(0, 30)) + (q.q.length > 30 ? '…' : '') : '';
   }).filter(function (x) { return x; });
   var unHtml = unAnsweredIds.length > 0
-    ? '<div class="rv-section"><div class="rv-section-title">未作答 ' + unAnsweredIds.length + ' 题（按错误计分）</div>' +
+    ? '<div class="rv-section"><div class="rv-section-title">未作答/未提交 ' + unAnsweredIds.length + ' 题（按 0 分计）</div>' +
       '<div class="rv-un-list">' + unAnsweredIds.map(function (t) { return '<div class="rv-un-item">· ' + t + '</div>'; }).join('') + '</div></div>'
     : '';
   app.innerHTML =
     '<div class="result">' +
     '<div class="res-emoji">' + emoji + '</div>' +
-    '<div class="' + bigCls + '">' + rate + '%</div>' +
+    '<div class="' + bigCls + ' exam-big-score">' + score + '</div>' +
+    '<div class="res-score-unit">/ ' + maxScore + ' 分 · 得分率 ' + rec.rate + '%</div>' +
     '<div class="res-sub">答对 ' + rec.correct + ' 题 · 答错 ' + rec.wrong + ' 题' + (rec.unanswered > 0 ? ' · 未答 ' + rec.unanswered + ' 题' : '') + ' · 共 ' + rec.total + ' 题</div>' +
+    streakHtml +
     '<div class="res-detail">' +
-    '<div class="rd-row"><span>得分率</span><b>' + rate + '%</b></div>' +
+    '<div class="rd-row"><span>本次得分</span><b>' + score + ' / ' + maxScore + ' 分</b></div>' +
+    '<div class="rd-row"><span>得分率</span><b>' + rec.rate + '%</b></div>' +
     '<div class="rd-row"><span>答对</span><b style="color:#07C160">' + rec.correct + '</b></div>' +
     '<div class="rd-row"><span>答错</span><b style="color:#FA5151">' + rec.wrong + '</b></div>' +
-    '<div class="rd-row"><span>未作答</span><b>' + rec.unanswered + '</b></div>' +
+    '<div class="rd-row"><span>未作答/未提交</span><b>' + rec.unanswered + '</b></div>' +
     '<div class="rd-row"><span>用时</span><b>' + durationTxt + '</b></div>' +
-    '<div class="rd-row"><span>错题已加入错题本</span><b style="color:#07C160">✓</b></div>' +
+    '<div class="rd-row"><span>评分规则</span><b style="font-size:12px;font-weight:400">单选0.5分 · 多选全对1分/少选0.5分/选错0分 · 判断1分</b></div>' +
     '</div>' +
+    (histItems ? '<div class="hist-box"><div class="hist-title">最近测试成绩</div>' + histItems + '</div>' : '') +
     (reviewItems ? '<div class="rv-section"><div class="rv-section-title">错题回顾（点开查看答案）</div>' + reviewItems + '</div>' : '') +
     unHtml +
     '<button class="res-btn" onclick="startExam(true)">再考一次</button>' +
@@ -7369,7 +7541,12 @@ function openExamSheet(root) {
   var grid = list.map(function (id, i) {
     var cls = 'sc';
     if (i === idx) cls += ' cur';
-    if (S.examAns[id] && S.examAns[id].length > 0) cls += ' ans';
+    var j = S.examJudged[id];
+    if (j) {
+      cls += j.ok ? ' ok' : ' bad';
+    } else if (S.examAns[id] && S.examAns[id].length > 0) {
+      cls += ' ans';
+    }
     var star = favSet.has(id) ? '<span class="star">★</span>' : '';
     return '<button class="' + cls + '" onclick="jumpTo(' + i + ')">' + (i + 1) + star + '</button>';
   }).join('');
@@ -7381,9 +7558,10 @@ function openExamSheet(root) {
     '<button class="sheet-close" onclick="closeSheet()">收起 ▲</button></div>' +
     '<div class="sheet-grid">' + grid + '</div>' +
     '<div class="sheet-legend">' +
-    '<span><i class="lg" style="background:#10AEFF"></i>已答</span>' +
+    '<span><i class="lg" style="background:#07C160"></i>答对</span>' +
+    '<span><i class="lg" style="background:#FA5151"></i>答错</span>' +
+    '<span><i class="lg" style="background:#10AEFF"></i>待提交</span>' +
     '<span><i class="lg" style="background:#F2F3F5"></i>未答</span>' +
-    '<span><i class="lg" style="background:#FFFFFF;box-shadow:inset 0 0 0 2px #07C160"></i>当前</span>' +
     '<button class="sheet-submit" onclick="closeSheet();submitExam()">交卷</button>' +
     '</div></div>';
 }

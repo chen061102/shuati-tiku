@@ -1,7 +1,7 @@
 /* 理论题库 · 离线缓存 Service Worker
  * 策略：缓存优先 + 后台更新（stale-while-revalidate）
  * 首次打开页面后，断网/服务器关闭也能正常刷题 */
-var CACHE = 'shuatibank-v1';
+var CACHE = 'shuatibank-v2';
 var ASSETS = ['./', './index.html', './sw.js', './manifest.webmanifest', './icon.png'];
 
 self.addEventListener('install', function (e) {
