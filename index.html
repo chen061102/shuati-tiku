@@ -1,0 +1,7304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="理论题库">
+<meta name="theme-color" content="#07C160">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<title>理论题库 · 以刷代练</title>
+<style>
+/* ============ 基础 ============ */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  background: #F7F7F7;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+  color: #1F1F1F;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+button { font-family: inherit; border: none; background: none; cursor: pointer; color: inherit; outline: none; touch-action: manipulation; }
+button:active { transform: scale(0.96); }
+#app { min-height: 100%; }
+
+/* ============ 首页 ============ */
+.home { padding: calc(14px + env(safe-area-inset-top)) 14px calc(30px + env(safe-area-inset-bottom)); max-width: 640px; margin: 0 auto; }
+.home-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 4px 14px; }
+.home-title { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+.home-import { font-size: 13px; color: #576B95; padding: 6px 10px; background: #FFFFFF; border-radius: 15px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.stats-card { background: #FFFFFF; border-radius: 12px; padding: 16px 8px; display: flex; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.stats-item { flex: 1; text-align: center; }
+.stats-num { font-size: 20px; font-weight: 700; color: #07C160; }
+.stats-num.red { color: #FA5151; }
+.stats-num.blue { color: #576B95; }
+.stats-num.dark { color: #1F1F1F; }
+.stats-label { font-size: 12px; color: #888; margin-top: 3px; }
+.mode-card { background: #FFFFFF; border-radius: 12px; padding: 16px 16px; margin-bottom: 12px; display: flex; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.mode-card:active { transform: scale(0.98); }
+.mode-ico { font-size: 26px; margin-right: 14px; width: 36px; text-align: center; }
+.mode-info { flex: 1; }
+.mode-name { font-size: 17px; font-weight: 600; }
+.mode-desc { font-size: 12px; color: #999; margin-top: 3px; }
+.mode-arrow { color: #C8C9CC; font-size: 20px; }
+.mode-badge { background: #FA5151; color: #fff; font-size: 12px; border-radius: 9px; padding: 1px 7px; margin-left: 8px; }
+.home-foot { text-align: center; padding-top: 14px; }
+.home-reset { font-size: 14px; color: #B2B2B2; padding: 8px 16px; }
+.home-tip { text-align: center; font-size: 11px; color: #C0C0C0; padding-top: 6px; }
+
+/* ============ 刷题页 ============ */
+.quiz { max-width: 640px; margin: 0 auto; }
+.qheader {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center;
+  background: #FFFFFF;
+  padding: calc(6px + env(safe-area-inset-top)) 8px 6px;
+  border-bottom: 1px solid #EFEFEF;
+}
+.hbtn { font-size: 14px; color: #1F1F1F; padding: 7px 10px; border-radius: 8px; }
+.hbtn.gray { color: #888; font-size: 20px; line-height: 1; }
+.hbtn.on { background: #07C160; color: #fff; }
+.qtitle { flex: 1; text-align: center; }
+.qt1 { font-size: 15px; font-weight: 600; }
+.qt2 { font-size: 11px; color: #999; margin-top: 2px; }
+.qheader .hbtns { display: flex; }
+
+.qbody { padding: 10px 12px calc(150px + env(safe-area-inset-bottom)); }
+.progress { height: 4px; background: #EFEFEF; border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+.progress-in { height: 100%; background: #07C160; border-radius: 2px; transition: width .2s; }
+
+.chips { display: flex; gap: 8px; margin-bottom: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex-shrink: 0; font-size: 13px; padding: 6px 14px; border-radius: 15px; background: #FFFFFF; color: #576B95; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.chip.on { background: #07C160; color: #fff; }
+
+.qcard { background: #FFFFFF; border-radius: 12px; padding: 16px 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.qmeta { display: flex; align-items: center; margin-bottom: 10px; }
+.qbadge { font-size: 12px; color: #07C160; background: #E8F8EF; border-radius: 4px; padding: 2px 8px; margin-right: 8px; }
+.qbadge.m { color: #10AEFF; background: #E7F5FE; }
+.qbadge.j { color: #FA9D3B; background: #FEF2E5; }
+.qno { font-size: 12px; color: #999; }
+.qfav { margin-left: auto; font-size: 13px; color: #FA9D3B; }
+.qtext { font-size: 17px; line-height: 1.65; color: #1F1F1F; margin-bottom: 14px; user-select: text; -webkit-user-select: text; word-break: break-all; }
+
+.noanswer { background: #FFF7E6; color: #B37B1E; font-size: 13px; border-radius: 8px; padding: 9px 12px; margin-bottom: 12px; display: flex; align-items: center; }
+.noanswer .na-ico { margin-right: 6px; }
+
+.opts { display: flex; flex-direction: column; gap: 10px; }
+.opt { display: flex; align-items: center; background: #F7F8FA; border-radius: 10px; padding: 11px 12px; border: 1.5px solid transparent; transition: background .15s, transform .1s; user-select: none; -webkit-user-select: none; }
+.opt:active { transform: scale(0.98); background: #EFF1F4; }
+.opt-letter { width: 28px; height: 28px; border-radius: 50%; background: #FFFFFF; color: #576B95; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+.opt-text { flex: 1; font-size: 16px; line-height: 1.5; color: #333; word-break: break-all; }
+.opt-mark { font-size: 18px; font-weight: 700; margin-left: 8px; }
+.opt-sel { border-color: #07C160; background: #F0FAF4; }
+.opt-sel .opt-letter { background: #07C160; color: #fff; }
+.opt-ok { border-color: #07C160; background: #E8F8EF; }
+.opt-ok .opt-letter { background: #07C160; color: #fff; }
+.opt-ok .opt-text { color: #07C160; font-weight: 600; }
+.opt-ok .opt-mark { color: #07C160; }
+.opt-bad { border-color: #FA5151; background: #FEF0F0; }
+.opt-bad .opt-letter { background: #FA5151; color: #fff; }
+.opt-bad .opt-text { color: #FA5151; font-weight: 600; }
+.opt-bad .opt-mark { color: #FA5151; }
+.opt-ans { border-color: #07C160; background: #E8F8EF; }
+.opt-ans .opt-letter { background: #07C160; color: #fff; }
+.opt-dim { opacity: .55; }
+
+.fb { border-radius: 10px; padding: 11px 14px; margin-top: 12px; font-size: 15px; font-weight: 600; }
+.fb-ok { background: #E8F8EF; color: #07C160; }
+.fb-bad { background: #FEF0F0; color: #FA5151; }
+
+/* ============ 底部操作栏 ============ */
+.bottombar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+  background: #FFFFFF;
+  border-top: 1px solid #EFEFEF;
+  display: flex;
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  max-width: 640px; margin: 0 auto;
+}
+.bbtn { flex: 1; text-align: center; font-size: 14px; color: #576B95; padding: 8px 0; border-radius: 10px; }
+.bbtn.main { color: #1F1F1F; font-weight: 600; font-size: 16px; }
+.bbtn.faved { color: #FA9D3B; }
+.submitbar {
+  position: fixed; left: 0; right: 0; z-index: 59;
+  bottom: calc(62px + env(safe-area-inset-bottom));
+  padding: 0 16px 8px; max-width: 640px; margin: 0 auto;
+}
+.submit-btn { width: 100%; background: #07C160; color: #fff; font-size: 17px; font-weight: 600; border-radius: 12px; padding: 13px 0; box-shadow: 0 2px 8px rgba(7,193,96,.35); }
+.submit-btn:active { transform: scale(0.97); }
+
+/* ============ 答题卡抽屉 ============ */
+.sheet-mask { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 90; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.sheet-mask.show { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 91;
+  background: #FFFFFF; border-radius: 16px 16px 0 0;
+  padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
+  max-width: 640px; margin: 0 auto;
+  transform: translateY(105%); transition: transform .25s;
+}
+.sheet.show { transform: translateY(0); }
+.sheet-head { display: flex; align-items: center; margin-bottom: 12px; }
+.sheet-title { font-size: 16px; font-weight: 600; }
+.sheet-sub { font-size: 12px; color: #999; margin-left: 8px; }
+.sheet-close { margin-left: auto; font-size: 13px; color: #576B95; padding: 6px 10px; }
+.sheet-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; max-height: 55vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.sc { aspect-ratio: 1; border-radius: 8px; background: #F2F3F5; color: #1F1F1F; font-size: 14px; position: relative; }
+.sc:active { transform: scale(.92); }
+.sc.cur { box-shadow: inset 0 0 0 2px #07C160; font-weight: 700; }
+.sc.ok { background: #07C160; color: #fff; }
+.sc.bad { background: #FA5151; color: #fff; }
+.sc.read { background: #D8D8DA; color: #fff; }
+.sc .star { position: absolute; top: -3px; right: -2px; font-size: 11px; color: #FA9D3B; }
+.sheet-legend { display: flex; gap: 14px; margin-top: 12px; font-size: 11px; color: #888; flex-wrap: wrap; }
+.sheet-legend span { display: flex; align-items: center; }
+.lg { width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; display: inline-block; }
+
+/* ============ 结果页 / 空状态 ============ */
+.result { text-align: center; padding: calc(60px + env(safe-area-inset-top)) 24px 40px; max-width: 640px; margin: 0 auto; }
+.res-emoji { font-size: 56px; }
+.res-big { font-size: 52px; font-weight: 700; color: #07C160; margin: 14px 0 6px; }
+.res-big.blue { color: #10AEFF; }
+.res-sub { font-size: 15px; color: #666; margin-bottom: 26px; }
+.res-btn { display: block; width: 100%; background: #07C160; color: #fff; font-size: 17px; font-weight: 600; border-radius: 12px; padding: 14px 0; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(7,193,96,.35); }
+.res-btn.plain { background: #FFFFFF; color: #576B95; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.res-detail { background: #FFFFFF; border-radius: 12px; padding: 14px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.res-detail .rd-row { display: flex; justify-content: space-between; font-size: 14px; color: #666; padding: 5px 0; }
+.res-detail .rd-row b { color: #1F1F1F; }
+.empty { text-align: center; padding: calc(80px + env(safe-area-inset-top)) 30px 40px; max-width: 640px; margin: 0 auto; }
+.empty-emoji { font-size: 58px; }
+.empty-title { font-size: 18px; font-weight: 600; margin: 14px 0 6px; }
+.empty-desc { font-size: 14px; color: #999; margin-bottom: 24px; }
+.empty-btn { display: block; width: 100%; background: #07C160; color: #fff; font-size: 16px; font-weight: 600; border-radius: 12px; padding: 13px 0; }
+
+/* ============ 弹窗 / Toast ============ */
+.modal-mask { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 30px; }
+.modal { background: #FFFFFF; border-radius: 14px; width: 100%; max-width: 420px; padding: 20px 18px; max-height: 78vh; display: flex; flex-direction: column; }
+.modal-title { font-size: 17px; font-weight: 600; text-align: center; margin-bottom: 10px; }
+.modal-desc { font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 14px; word-break: break-all; }
+.modal-desc code { background: #F2F3F5; border-radius: 4px; padding: 1px 5px; font-size: 12px; color: #576B95; }
+.modal-actions { display: flex; gap: 10px; }
+.mbtn { flex: 1; border-radius: 10px; padding: 11px 0; font-size: 15px; font-weight: 600; }
+.mbtn.cancel { background: #F2F3F5; color: #576B95; }
+.mbtn.ok { background: #07C160; color: #fff; }
+.mbtn.danger { background: #FA5151; color: #fff; }
+.mbtn:active { transform: scale(.96); }
+.modal textarea { width: 100%; min-height: 110px; border: 1px solid #E5E5E5; border-radius: 8px; padding: 10px; font-size: 13px; font-family: Menlo, Consolas, monospace; resize: vertical; margin-bottom: 10px; }
+.modal .file-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.file-btn { font-size: 14px; color: #576B95; background: #F2F3F5; border-radius: 8px; padding: 9px 14px; }
+.file-name { font-size: 12px; color: #999; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.toast { position: fixed; top: 18%; left: 50%; transform: translateX(-50%); background: rgba(17,17,17,.85); color: #fff; font-size: 14px; border-radius: 10px; padding: 11px 18px; z-index: 200; max-width: 82%; text-align: center; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+'use strict';
+/* ==================== 内置题库（PDF完整540题：420单选 + 60多选 + 60判断） ==================== */
+const QUESTION_BANK = [
+ {
+  "id": "s1",
+  "type": "single",
+  "q": "土方施工首先需清理施工场地，对一些伐除的树木要连根拔出，一般来说，当挖土深度大于一定值可不必拔除树根，规定数值是（ ）。",
+  "options": {
+   "A": "30cm",
+   "B": "50cm",
+   "C": "70cm",
+   "D": "80cm"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s2",
+  "type": "single",
+  "q": "绿化栽植或播种前应对该地区的土壤理化性质进行化验分析，采取相应的土壤改良、施肥和置换客土等措施。根据《园林绿化工程施工及验收规范》 （CJJ82-2012）规定，胸径≥20cm的乔木栽植土壤有效土层厚度应大于（ ）cm。",
+  "options": {
+   "A": "140",
+   "B": "160",
+   "C": "180",
+   "D": "200"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s3",
+  "type": "single",
+  "q": "当发现基质PH值过碱时（PH>7.5）用（ ）调节。",
+  "options": {
+   "A": "石灰",
+   "B": "硫磺粉",
+   "C": "碳酸钙",
+   "D": "硫酸"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s4",
+  "type": "single",
+  "q": "目前温室花卉的生产上使用率最高的基质是（ ）。",
+  "options": {
+   "A": "蛭石",
+   "B": "珍珠岩",
+   "C": "椰糠",
+   "D": "泥炭"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s5",
+  "type": "single",
+  "q": "工程治理技术在治理土壤重金属污染中被广泛应用，其中，将污染土壤部分或全部换去，换入非污染土壤的方法是（ ）。",
+  "options": {
+   "A": "客土法",
+   "B": "深耕翻土法",
+   "C": "换土法",
+   "D": "去表土法"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s6",
+  "type": "single",
+  "q": "绿化栽植或播种前应对该地区的土壤理化性质进行化验分析，采取相应的土壤改良、施肥和置换客土等措施。根据《园林绿化工程施工及验收规范》 （CJJ82-2012）规定，在设施顶面绿化时，灌木栽植土壤有效土层厚度应大于（ ）cm。",
+  "options": {
+   "A": "30",
+   "B": "35",
+   "C": "40",
+   "D": "45"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s7",
+  "type": "single",
+  "q": "对盐碱土壤进杀菌行消毒，可选择（ ）。",
+  "options": {
+   "A": "石灰粉",
+   "B": "福尔马林",
+   "C": "代森锌",
+   "D": "硫磺粉"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s8",
+  "type": "single",
+  "q": "花卉园艺上的温室及保护地主要的作用在（ ）方面应用。",
+  "options": {
+   "A": "花卉的引种、生产和科研",
+   "B": "花卉栽培中的升温",
+   "C": "花卉的引种、驯化和科普、教学研究",
+   "D": "花卉的切花周年生产"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s9",
+  "type": "single",
+  "q": "在工程设计时,为了使工程稳定,就必须有意识地创造合理的边坡,使之小于或等于自然安息角。干壤土安息角为（ ） ，潮壤土安息角为（ ）,湿壤土安息角为（ ）。",
+  "options": {
+   "A": "38°,35°,25°",
+   "B": "35°,30°,20°",
+   "C": "50°,40°,30°",
+   "D": "45°,35°,15°"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s10",
+  "type": "single",
+  "q": "山地水土保持工程应实施（ ）原则。",
+  "options": {
+   "A": "小流域治理",
+   "B": "因地制宜",
+   "C": "植被护坡",
+   "D": "围山转"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s11",
+  "type": "single",
+  "q": "为施工安全起见，垂直挖土超过一定深度应放坡，一般规定中等密度土垂直挖土深度的极限值是（ ）。",
+  "options": {
+   "A": "1.0m",
+   "B": "1.20m",
+   "C": "1.25m",
+   "D": "1.50m"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s12",
+  "type": "single",
+  "q": "在大、中比例尺地形图上，为了便于读图，将等高线分为首曲线、计曲线、间曲线、助曲线。其中，按相应比例尺规定的等高距测绘的等高线，图上用细线表示的为（ ）。",
+  "options": {
+   "A": "首曲线",
+   "B": "计曲线",
+   "C": "间曲线",
+   "D": "助曲线"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s13",
+  "type": "single",
+  "q": "在工程设计时，为了使工程稳定，就必须有意识地创造合理的边坡，使之小于或等于自然安息角。2-20mm干砾石土壤安息角为（ ），2-20mm潮砾石土壤安息角为（ ），2-20mm湿砾石土壤安息角为（ ）。",
+  "options": {
+   "A": "40°,45°,40°",
+   "B": "35°,40° ，35°",
+   "C": "40°,35°,40°",
+   "D": "40°,40° ，35°"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s14",
+  "type": "single",
+  "q": "土壤的基质 PH值的测定常用仪器是（ ）。",
+  "options": {
+   "A": "PH计",
+   "B": "EC计",
+   "C": "PH试纸",
+   "D": "以上都可以"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s15",
+  "type": "single",
+  "q": "在工程设计时，为了使工程稳定，就必须有意识地创造合理的边坡，使之小于或等于自然安息角。20-200mm干卵石土壤安息角为（ ），20-200mm潮卵石土壤安息角为，20-200mm湿卵石土壤安息角为（ ）。",
+  "options": {
+   "A": "35°,45°,25°",
+   "B": "40°,35°,30°",
+   "C": "35°,40°,35°",
+   "D": "40°,40°,25°"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s16",
+  "type": "single",
+  "q": "以下哪项不属于土壤改良包括的范围（ ）。",
+  "options": {
+   "A": "不同土壤类型施肥标准的确定",
+   "B": "不同土壤类型改良",
+   "C": "土壤熟化",
+   "D": "土壤酸碱度的调节"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s17",
+  "type": "single",
+  "q": "在工程设计时,为了使工程稳定,就必须有意识地创造合理的边坡,使之小于或等于自然安息角。<0.001-0.005mm干黏土土壤安息角为（ ）,<0.001-0.005mm潮黏土土壤安息角为（ ）,<0.001-0.005mm湿黏土土壤安息角为（ ）。",
+  "options": {
+   "A": "45°,45°,35°",
+   "B": "30°,45°,30°",
+   "C": "30°,32°,27°",
+   "D": "45°,35°,15°"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s18",
+  "type": "single",
+  "q": "下列（ ）器官属于植物的生殖器官。",
+  "options": {
+   "A": "根、茎",
+   "B": "茎、叶",
+   "C": "花、果实、种子",
+   "D": "花、茎"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s19",
+  "type": "single",
+  "q": "球根花卉的花芽分化一般属于（ ）。",
+  "options": {
+   "A": "夏秋分化型",
+   "B": "冬春分化型",
+   "C": "多次分化型",
+   "D": "当年一次分化型"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s20",
+  "type": "single",
+  "q": "百合的促成栽培中温度管理很关键，最重要的是（ ）。",
+  "options": {
+   "A": "低温春化处理",
+   "B": "促成加温",
+   "C": "保证 6周的低温春化",
+   "D": "3周左右的发根温度"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s21",
+  "type": "single",
+  "q": "在栽培过程中，能起到降温作用的措施有( )。",
+  "options": {
+   "A": "设置荫棚",
+   "B": "覆盖",
+   "C": "修剪",
+   "D": "施肥"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s22",
+  "type": "single",
+  "q": "以下光照不是必要条件的阶段是（ ）。",
+  "options": {
+   "A": "生殖生长阶段",
+   "B": "抽枝展叶阶段",
+   "C": "发芽阶段",
+   "D": "结果阶段"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s23",
+  "type": "single",
+  "q": "在一定的光强范围内,植物的光合强度随光照度的上升而增加,当光照度上升到某一数值之后,光合强度不再继续提高时的光照度值称为（ ）。",
+  "options": {
+   "A": "光补偿点",
+   "B": "光饱和点",
+   "C": "光照度",
+   "D": "光强度"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s24",
+  "type": "single",
+  "q": "对多数草本花卉而言，种子经过充分干燥，储藏时其相对湿度维持在（ ）为宜。",
+  "options": {
+   "A": "30%-60%",
+   "B": "20%-50%",
+   "C": "10% -30%",
+   "D": "40% -80%"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s25",
+  "type": "single",
+  "q": "对种皮很坚硬的种子，在播种前可（ ）处理。",
+  "options": {
+   "A": "机械破皮",
+   "B": "温水浸泡",
+   "C": "催芽",
+   "D": "消毒"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s26",
+  "type": "single",
+  "q": "大种子适合（ ）。",
+  "options": {
+   "A": "点播",
+   "B": "撒播",
+   "C": "混播",
+   "D": "单独播"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s27",
+  "type": "single",
+  "q": "当穴盘苗具有 2-3枚真叶，是生长的（ ）阶段。",
+  "options": {
+   "A": "第一阶段",
+   "B": "第二阶段",
+   "C": "第三阶段",
+   "D": "第四阶段"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s28",
+  "type": "single",
+  "q": "绿萝扦插苗生根最佳的介质温度（ ）。",
+  "options": {
+   "A": "低于 18℃",
+   "B": "18-25℃",
+   "C": "高于 25℃",
+   "D": "18-30℃"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s29",
+  "type": "single",
+  "q": "吊盆绿萝的扦插属于（ ）。",
+  "options": {
+   "A": "叶插",
+   "B": "根插",
+   "C": "枝插",
+   "D": "半叶插"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s30",
+  "type": "single",
+  "q": "采取某些植物根际或地上茎叶腋间自然发生的短缩、肥厚呈莲座状的短枝用于繁殖的方法称为（ ）。",
+  "options": {
+   "A": "根茎繁殖",
+   "B": "走茎繁殖",
+   "C": "吸芽繁殖",
+   "D": "分株繁殖"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s31",
+  "type": "single",
+  "q": "采取叶丛抽生出来的节间较长的茎，通过节上着生叶、花和不定根产生幼小植株的繁殖方法称为（ ）。",
+  "options": {
+   "A": "根茎繁殖",
+   "B": "走茎繁殖",
+   "C": "吸芽繁殖",
+   "D": "分株繁殖"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s32",
+  "type": "single",
+  "q": "下列透气性最好的是（ ）。",
+  "options": {
+   "A": "塑料盆",
+   "B": "陶盆",
+   "C": "瓷盆",
+   "D": "紫砂盆"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s33",
+  "type": "single",
+  "q": "地下茎变态成实心球状或扁球形，有明显的环状茎节的是（ ）。",
+  "options": {
+   "A": "块茎类球根",
+   "B": "鳞茎类球根",
+   "C": "块根类球根",
+   "D": "球茎类球根"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s34",
+  "type": "single",
+  "q": "具有“佛焰花序”的是下列（ ）科植物。",
+  "options": {
+   "A": "百合科",
+   "B": "凤梨科",
+   "C": "天南星科",
+   "D": "菊科"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s35",
+  "type": "single",
+  "q": "被称为“室内观叶植物第一大科”的是（ ）。",
+  "options": {
+   "A": "百合科",
+   "B": "凤梨科",
+   "C": "天南星科",
+   "D": "菊科"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s36",
+  "type": "single",
+  "q": "有根系从盆底排水孔伸出，说明需要（ ）。",
+  "options": {
+   "A": "上盆",
+   "B": "换盆",
+   "C": "翻盆",
+   "D": "转盆"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s37",
+  "type": "single",
+  "q": "下列哪种水仙花球最好（ ）。",
+  "options": {
+   "A": "20庄",
+   "B": "30庄",
+   "C": "40庄",
+   "D": "50庄"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s38",
+  "type": "single",
+  "q": "雕刻水养水仙最好在（ ）。",
+  "options": {
+   "A": "秋季",
+   "B": "冬季",
+   "C": "夏季",
+   "D": "清明节后"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s39",
+  "type": "single",
+  "q": "下列（ )属于焦点花。",
+  "options": {
+   "A": "百合",
+   "B": "文竹",
+   "C": "富贵竹",
+   "D": "肾蕨"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s40",
+  "type": "single",
+  "q": "以下花材可以种在盆器中心位置或焦点位置的是（ ）。",
+  "options": {
+   "A": "百合",
+   "B": "常春藤",
+   "C": "绿萝",
+   "D": "朱蕉"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s41",
+  "type": "single",
+  "q": "以下花材适合种在盆器的前面或四周的是（ ）。",
+  "options": {
+   "A": "百合",
+   "B": "千叶兰",
+   "C": "红掌",
+   "D": "朱蕉"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s42",
+  "type": "single",
+  "q": "月季经过修剪后枝条长到（ ）时候开始花芽分化。",
+  "options": {
+   "A": "刚萌芽",
+   "B": "5-6cm",
+   "C": "10cm 左右",
+   "D": "10cm以上"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s43",
+  "type": "single",
+  "q": "月季的换盆最适宜在（ ）。",
+  "options": {
+   "A": "春季",
+   "B": "夏季",
+   "C": "秋季",
+   "D": "冬季"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s44",
+  "type": "single",
+  "q": "郁金香自然球的自然花期一般在（ ）。",
+  "options": {
+   "A": "1-2 月份",
+   "B": "3-4 月份",
+   "C": "5-6 月份",
+   "D": "7-8 月份"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s45",
+  "type": "single",
+  "q": "月季可以通过（ ）来调控花期。",
+  "options": {
+   "A": "光照",
+   "B": "低温",
+   "C": "修剪",
+   "D": "控水"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s46",
+  "type": "single",
+  "q": "大花绣球对光照的适应性表现为（ ）。",
+  "options": {
+   "A": "充足光照",
+   "B": "半阴",
+   "C": "都可以",
+   "D": "高光环境"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s47",
+  "type": "single",
+  "q": "大花绣球对土壤 PH值的要求为（ ）。",
+  "options": {
+   "A": "微酸性",
+   "B": "微碱性",
+   "C": "微酸性和微碱性都可以",
+   "D": "酸性"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s48",
+  "type": "single",
+  "q": "刻芽时间最好在（ ）。",
+  "options": {
+   "A": "萌芽前后",
+   "B": "冬季",
+   "C": "夏季",
+   "D": "早秋"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s49",
+  "type": "single",
+  "q": "风信子是（ ）休眠。",
+  "options": {
+   "A": "夏季",
+   "B": "冬季",
+   "C": "春季",
+   "D": "秋季"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s50",
+  "type": "single",
+  "q": "蓝莓授粉主要依托（ ）。",
+  "options": {
+   "A": "蜜蜂昆虫",
+   "B": "风",
+   "C": "人工",
+   "D": "其他"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s51",
+  "type": "single",
+  "q": "三角梅花芽分化时间一般在（ ）。",
+  "options": {
+   "A": "春",
+   "B": "夏",
+   "C": "秋",
+   "D": "冬"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s52",
+  "type": "single",
+  "q": "三角梅花芽分化期对水分的需求是（ ）。",
+  "options": {
+   "A": "充足水分",
+   "B": "控水",
+   "C": "大水浇灌",
+   "D": "干旱"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s53",
+  "type": "single",
+  "q": "三角梅观赏的主要部位是（ ）。",
+  "options": {
+   "A": "花瓣",
+   "B": "花萼",
+   "C": "苞片",
+   "D": "果实"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s54",
+  "type": "single",
+  "q": "秋播春花类指在（ ）播种，以幼苗越冬，一般来年春季开花、结果，遇夏热植株枯死的越年生草本观赏植物。",
+  "options": {
+   "A": "春",
+   "B": "夏",
+   "C": "秋",
+   "D": "冬"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s55",
+  "type": "single",
+  "q": "下列花卉（ ）比较耐寒。",
+  "options": {
+   "A": "金盏菊",
+   "B": "鸡冠花",
+   "C": "矮牵牛",
+   "D": "孔雀草"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s56",
+  "type": "single",
+  "q": "抹蕾的目的是（ ）。",
+  "options": {
+   "A": "增加花量",
+   "B": "促进分枝",
+   "C": "减少养分损耗",
+   "D": "延长花期"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s57",
+  "type": "single",
+  "q": "素馨是（ ）性木质藤本。",
+  "options": {
+   "A": "缠绕性",
+   "B": "吸附性",
+   "C": "匍匐性",
+   "D": "无自主攀爬能力"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s58",
+  "type": "single",
+  "q": "荷花属于（ ）类球根花卉。",
+  "options": {
+   "A": "鳞茎",
+   "B": "块茎",
+   "C": "根茎",
+   "D": "块根"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s59",
+  "type": "single",
+  "q": "浙江地区百合种植的最适宜季节是（ ）。",
+  "options": {
+   "A": "2月份",
+   "B": "7月份",
+   "C": "10月份",
+   "D": "12月份"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s60",
+  "type": "single",
+  "q": "葡萄风信子是（ ）科球根花卉。",
+  "options": {
+   "A": "百合科",
+   "B": "石蒜科",
+   "C": "鸢尾科",
+   "D": "天南星科"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s61",
+  "type": "single",
+  "q": "郁金香秋冬种植时，最晚时间在（ ）。",
+  "options": {
+   "A": "冰冻前 1 周",
+   "B": "12月底",
+   "C": "1月底",
+   "D": "冰冻前 2 周"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s62",
+  "type": "single",
+  "q": "郁金香盆栽时，一般 15cm口径的盆可种（ ）。",
+  "options": {
+   "A": "1颗",
+   "B": "2颗",
+   "C": "3颗",
+   "D": "4颗"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s63",
+  "type": "single",
+  "q": "树龄 350年的树木，为（ ）级古树。",
+  "options": {
+   "A": "一",
+   "B": "二",
+   "C": "三",
+   "D": "四"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s64",
+  "type": "single",
+  "q": "挖坑机属于哪一类机械（ ）。",
+  "options": {
+   "A": "土方机械",
+   "B": "起重机械",
+   "C": "整修机械",
+   "D": "种植机械"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s65",
+  "type": "single",
+  "q": "专供含有一定泥浆、纤维和其他固体颗粒物质抽水使用的一种水泵是（ ）。",
+  "options": {
+   "A": "潜水泵",
+   "B": "离心泵",
+   "C": "污水泵",
+   "D": "管道泵"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s66",
+  "type": "single",
+  "q": "平石式雨水口的井篦与道路沟底处于同一平面，或低于沟底（ ） ，以便雨水的迅速排放。",
+  "options": {
+   "A": "5-15mm",
+   "B": "10 -20mm",
+   "C": "20 -50mm",
+   "D": "30 -60mm"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s67",
+  "type": "single",
+  "q": "除在苗圃中排水渠有三角形断面之外，一般的排水明渠均为矩形或梯形断面。梯形断面的最小底宽应不小于（ ）。",
+  "options": {
+   "A": "10cm",
+   "B": "20cm",
+   "C": "30cm",
+   "D": "40cm"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s68",
+  "type": "single",
+  "q": "（ ）墙体靠墙身自重抵抗侧压力，可采用混凝土、石块、人工砌体等。",
+  "options": {
+   "A": "悬臂式",
+   "B": "扶臂式",
+   "C": "半重力式",
+   "D": "重力式"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s69",
+  "type": "single",
+  "q": "图中步石排列的形式为（ ）。",
+  "options": {
+   "A": "交错排列",
+   "B": "三连排列",
+   "C": "双连排列",
+   "D": "雁行排列"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s70",
+  "type": "single",
+  "q": "在园林铺装中，普通粘土砖、缸砖和混凝土板面层相邻两块块料的高低误差允许在（ ）mm。",
+  "options": {
+   "A": "3mm",
+   "B": "2.5mm",
+   "C": "1.5mm",
+   "D": "0.5mm"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s71",
+  "type": "single",
+  "q": "喷水池的基础垫层设计尺寸要求是（ ）。",
+  "options": {
+   "A": "灰土层 20cm，C10 砼 10cm",
+   "B": "灰土层 30cm，C10 砼 10—20cm",
+   "C": "灰土层 30cm，C10 砼 30cm",
+   "D": "灰土层 50cm，C10 砼 10cm"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s72",
+  "type": "single",
+  "q": "倾斜式红砖挡墙的倾斜坡度应在（ ）。",
+  "options": {
+   "A": "±10º角",
+   "B": "±15º角",
+   "C": "±20º角",
+   "D": "±25º角"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s73",
+  "type": "single",
+  "q": "喷水池池底一般为钢筋砼结构，其钢筋砼厚度不应小于（ ）。",
+  "options": {
+   "A": "10cm",
+   "B": "15cm",
+   "C": "20cm",
+   "D": "30cm"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s74",
+  "type": "single",
+  "q": "园路灰土地基的灰土比例一般为（ ）。",
+  "options": {
+   "A": "1:9 或 2:8",
+   "B": "4:6 或 3:7",
+   "C": "5: 5",
+   "D": "1: 9"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s75",
+  "type": "single",
+  "q": "用于木质铺装路面的木材大部分需加压注入（ ）。",
+  "options": {
+   "A": "油漆",
+   "B": "防腐剂",
+   "C": "防水砂浆",
+   "D": "木龙骨"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s76",
+  "type": "single",
+  "q": "（ ）基础强度高，施工快捷，基础深度是依叠石高度而定。",
+  "options": {
+   "A": "铺石基础",
+   "B": "桩木基础",
+   "C": "混凝土基础",
+   "D": "碎石基础"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s77",
+  "type": "single",
+  "q": "园桥施工时为了减轻基坑坡壁顶面静荷载，沿基坑顶面周围至少在（ ）范围内不得堆置土方、物料。",
+  "options": {
+   "A": "0.2m",
+   "B": "0.5m",
+   "C": "0.8m",
+   "D": "1m"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s78",
+  "type": "single",
+  "q": "园桥基础施工严禁采用（ ）施工，分段位置宜设在沉降缝或伸缩缝处。",
+  "options": {
+   "A": "灌浆法",
+   "B": "分段法",
+   "C": "干垒法",
+   "D": "湿铺法"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s79",
+  "type": "single",
+  "q": "小型水闸在园林水景应用中十分常见，以下不属于水闸的上层建筑的是（ ）。",
+  "options": {
+   "A": "闸墙",
+   "B": "铺盖",
+   "C": "翼墙",
+   "D": "闸墩"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s80",
+  "type": "single",
+  "q": "以下花卉在华东地区不能露地越冬的是（ ）。",
+  "options": {
+   "A": "三色堇",
+   "B": "羽衣甘蓝",
+   "C": "三角梅",
+   "D": "月季"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s81",
+  "type": "single",
+  "q": "对同一种植物而言，对低温的抵抗力最强的是（ ）。",
+  "options": {
+   "A": "多年生老枝",
+   "B": "嫩芽",
+   "C": "休眠期种子",
+   "D": "休眠期枝条"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s82",
+  "type": "single",
+  "q": "以下花卉耐寒性最强的是（ ）。",
+  "options": {
+   "A": "金鱼草",
+   "B": "三色堇",
+   "C": "花毛茛",
+   "D": "一串红"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s83",
+  "type": "single",
+  "q": "浇花用（ ）最好。",
+  "options": {
+   "A": "雨水和雪水",
+   "B": "自来水",
+   "C": "井水",
+   "D": "家用废水"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s84",
+  "type": "single",
+  "q": "冬季浇水最好的时间是（ ）。",
+  "options": {
+   "A": "早晨",
+   "B": "傍晚",
+   "C": "午前 1-2时",
+   "D": "午后 1-2时"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s85",
+  "type": "single",
+  "q": "灌溉水的 PH 值在（ ）间均可使用。",
+  "options": {
+   "A": "5-8.5",
+   "B": "5 -7",
+   "C": "5 -6",
+   "D": "6 -8"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s86",
+  "type": "single",
+  "q": "N（氮）肥一般促进植物的（ ）生长。",
+  "options": {
+   "A": "开花",
+   "B": "营养生长",
+   "C": "结果",
+   "D": "地下部分生长"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s87",
+  "type": "single",
+  "q": "下列能使植物生长比较健壮、坚硬的是（ ）。",
+  "options": {
+   "A": "尿素",
+   "B": "硝态氮",
+   "C": "铵态氮",
+   "D": "氨基酸"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s88",
+  "type": "single",
+  "q": "叶脉间黄化，叶脉呈现绿色一般是缺（ ）。",
+  "options": {
+   "A": "氮肥",
+   "B": "铁肥",
+   "C": "钾肥",
+   "D": "钙肥"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s89",
+  "type": "single",
+  "q": "作物的整个生长在某一个时期内，对某种养分的要求虽不多，但是却十分的迫切，这个时期如果植物缺乏这种养分，生长发育就受到很大的影响，以后即使大量供应这种养分，也难以弥补损失。我们把这个时期叫做( )。",
+  "options": {
+   "A": "作物营养临界期",
+   "B": "作物营养最大效率期",
+   "C": "作物营养敏感期",
+   "D": "作物营养期"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s90",
+  "type": "single",
+  "q": "夏季不适合的温室、大棚操作是（ ）。",
+  "options": {
+   "A": "开窗通风",
+   "B": "拉遮阳网降温",
+   "C": "灌水降温",
+   "D": "闷棚"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s91",
+  "type": "single",
+  "q": "以下属于冬季观花的是（ ）。",
+  "options": {
+   "A": "三色堇",
+   "B": "羽衣甘蓝",
+   "C": "孔雀草",
+   "D": "矮牵牛"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s92",
+  "type": "single",
+  "q": "以下花卉华东地区能露地越冬的是（ ）。",
+  "options": {
+   "A": "花毛茛",
+   "B": "矮牵牛",
+   "C": "洋水仙",
+   "D": "报春花"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s93",
+  "type": "single",
+  "q": "无花果对土壤 PH 值的要求是（ ）。",
+  "options": {
+   "A": "微酸性",
+   "B": "微碱性",
+   "C": "中性",
+   "D": "都可以"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s94",
+  "type": "single",
+  "q": "无花果地栽区域年平均气温（ )比较适宜。",
+  "options": {
+   "A": "13-15℃",
+   "B": "5℃左右",
+   "C": "-5℃",
+   "D": "15℃以上"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s95",
+  "type": "single",
+  "q": "三角梅的花期调控主要手段是（ ）。",
+  "options": {
+   "A": "光照",
+   "B": "控水",
+   "C": "控肥",
+   "D": "加温"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s96",
+  "type": "single",
+  "q": "以下最不耐寒的是（ ）类铁。",
+  "options": {
+   "A": "早花大花型",
+   "B": "晚花大花型",
+   "C": "意大利型",
+   "D": "弗罗里达型"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s97",
+  "type": "single",
+  "q": "非洲菊追肥苗期以 （ ）肥料为主",
+  "options": {
+   "A": "15-15-15",
+   "B": "12 -5-42",
+   "C": "12 -2-44",
+   "D": "硝酸钾"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s98",
+  "type": "single",
+  "q": "基肥是以（ ）为主。",
+  "options": {
+   "A": "尿素",
+   "B": "有机肥",
+   "C": "磷肥",
+   "D": "化肥"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s99",
+  "type": "single",
+  "q": "荷花适宜的生活水深（ ）。",
+  "options": {
+   "A": "0.3～0.5m",
+   "B": "0.5 ～0.7m",
+   "C": "0.6 ～1.0m",
+   "D": "0.8 ～1.5m"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s100",
+  "type": "single",
+  "q": "有机磷杀虫剂的作用机制是抑制昆虫体内（ ）。",
+  "options": {
+   "A": "胆碱酯酶",
+   "B": "线粒体",
+   "C": "轴突",
+   "D": "三羧酸循环"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s101",
+  "type": "single",
+  "q": "防治白粉病的保护性杀菌剂是（ ）。",
+  "options": {
+   "A": "硫磺",
+   "B": "三唑酮",
+   "C": "波尔多液",
+   "D": "氧氯化铜"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s102",
+  "type": "single",
+  "q": "属于有机硫杀菌剂的是（ ）。",
+  "options": {
+   "A": "代森锰锌",
+   "B": "硫磺",
+   "C": "石硫合剂",
+   "D": "波尔多液"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s103",
+  "type": "single",
+  "q": "早花大花型铁线莲花后轻剪方式是（ ）。",
+  "options": {
+   "A": "花下即可",
+   "B": "花下 2-3节",
+   "C": "剪掉残花即可",
+   "D": "都可以"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s104",
+  "type": "single",
+  "q": "晚花大花型铁线莲花后一般（ ）。",
+  "options": {
+   "A": "中度回缩",
+   "B": "重剪",
+   "C": "轻剪",
+   "D": "中剪"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s105",
+  "type": "single",
+  "q": "不耐寒的观叶植物一般（ ）时候进行修剪整形。",
+  "options": {
+   "A": "开春前",
+   "B": "春季",
+   "C": "秋季",
+   "D": "冬季"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s106",
+  "type": "single",
+  "q": "月季修剪中，剪口位于强壮腋芽上方（ ）处。",
+  "options": {
+   "A": "0.5厘米",
+   "B": "1.0厘米",
+   "C": "3厘米",
+   "D": "2厘米"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s107",
+  "type": "single",
+  "q": "对新枝开花的绣球品种，其重剪时间一般在（ ）。",
+  "options": {
+   "A": "春",
+   "B": "夏",
+   "C": "秋",
+   "D": "冬"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s108",
+  "type": "single",
+  "q": "蓝莓小苗整形时，一般留 20-30cm短截后促发的新枝留（ ）根形成饱满株型。",
+  "options": {
+   "A": "1-3",
+   "B": "3 -5",
+   "C": "2",
+   "D": "都可以"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s109",
+  "type": "single",
+  "q": "高度 1-2米，主要造景应用为限制空间、过渡视线等的植物类型为（ ）。",
+  "options": {
+   "A": "中灌木",
+   "B": "矮小灌木",
+   "C": "高灌木",
+   "D": "小乔木"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s110",
+  "type": "single",
+  "q": "（ ）外形植物的造景特性可作为视觉景观的重点，与几何形建筑或景观配合使用（ ）。",
+  "options": {
+   "A": "纺锤形",
+   "B": "圆锥形",
+   "C": "圆球形",
+   "D": "水平展开形"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s111",
+  "type": "single",
+  "q": "苗木栽植前的修剪应根据各地自然条件，根据《园林绿化工程施工及验收规范》 （CJJ82-2012） ，具有中央领导干、主轴明显的落叶乔木修建时应（ ）。",
+  "options": {
+   "A": "修剪主枝",
+   "B": "可剪去枝条的 1/2",
+   "C": "保持原有树形",
+   "D": "修剪主剪"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s112",
+  "type": "single",
+  "q": "早春先花后叶、头状花序黄色、枝条柔软可打结造型的是（ ）。",
+  "options": {
+   "A": "结香",
+   "B": "腊梅",
+   "C": "丁香",
+   "D": "金钟"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s113",
+  "type": "single",
+  "q": "下列植物中不适合作盆景材料的是（ ）。",
+  "options": {
+   "A": "槭树",
+   "B": "泡桐",
+   "C": "日本五针松",
+   "D": "红檵木"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s114",
+  "type": "single",
+  "q": "道路绿化树木的树形多种多样，下列哪一树种的树冠是浑圆对称（ ）。",
+  "options": {
+   "A": "桂花",
+   "B": "香泡",
+   "C": "榉树",
+   "D": "杜英"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s115",
+  "type": "single",
+  "q": "根据《公园设计规范》 （GB51192-2016） ，古树名木成林地带保护范围的划定为外缘树树冠垂直投影以外（ ）所围合的范围。",
+  "options": {
+   "A": "3m",
+   "B": "5m",
+   "C": "8m",
+   "D": "10m"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s116",
+  "type": "single",
+  "q": "海棠、山定子种子多采用（ ）方式播种。",
+  "options": {
+   "A": "点播",
+   "B": "扦插",
+   "C": "条播",
+   "D": "撒播"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s117",
+  "type": "single",
+  "q": "古树多数已属高龄，过多的消耗会加剧树势衰弱， （ ）古树挂果过多，易造成生殖消耗过大。",
+  "options": {
+   "A": "女贞",
+   "B": "雪松",
+   "C": "银杏",
+   "D": "白皮松"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s118",
+  "type": "single",
+  "q": "一级保护的古树和名木保护范围不小于树冠垂直投影外（ ）米。",
+  "options": {
+   "A": "2",
+   "B": "3",
+   "C": "5",
+   "D": "8"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s119",
+  "type": "single",
+  "q": "一般 1、2年生的铁线莲用（ ）粗的竹竿绑缚比较合适。",
+  "options": {
+   "A": "直径 1.5cm",
+   "B": "直径 1.0cm",
+   "C": "直径 0.5cm",
+   "D": "都可以"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s120",
+  "type": "single",
+  "q": "铁线莲的攀爬依靠的是（ ）。",
+  "options": {
+   "A": "卷须",
+   "B": "茎",
+   "C": "气生根",
+   "D": "叶柄"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s121",
+  "type": "single",
+  "q": "下列保水性最好的介质是（ ）。",
+  "options": {
+   "A": "泥炭",
+   "B": "珍珠岩",
+   "C": "陶粒",
+   "D": "树皮"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s122",
+  "type": "single",
+  "q": "下列最适合做排水层的是（ ）。",
+  "options": {
+   "A": "陶粒",
+   "B": "泥炭",
+   "C": "珍珠岩",
+   "D": "蛭石"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s123",
+  "type": "single",
+  "q": "下列最适合大部分植物生长的土壤是（ ）。",
+  "options": {
+   "A": "沙土",
+   "B": "黏土",
+   "C": "黄泥土",
+   "D": "壤土"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s124",
+  "type": "single",
+  "q": "平畦的特点（ ）。",
+  "options": {
+   "A": "土地利用率高",
+   "B": "保水性强",
+   "C": "土壤蒸发量大",
+   "D": "用工少"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s125",
+  "type": "single",
+  "q": "不能用做覆盖材料的是（ ）。",
+  "options": {
+   "A": "秸秆",
+   "B": "沙",
+   "C": "普通地膜",
+   "D": "细土"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s126",
+  "type": "single",
+  "q": "最好的扦插枝条为（ ）。",
+  "options": {
+   "A": "健壮充实的枝条",
+   "B": "阴生枝",
+   "C": "老枝",
+   "D": "病枝"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s127",
+  "type": "single",
+  "q": "除了多肉植物，剪穗过程中最重要的是（ ）。",
+  "options": {
+   "A": "消毒",
+   "B": "保湿",
+   "C": "修剪",
+   "D": "低温"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s128",
+  "type": "single",
+  "q": "对一些花叶品种的观叶植物出现返祖现象时，应该及时（ ）。",
+  "options": {
+   "A": "去异",
+   "B": "摘心",
+   "C": "换盆",
+   "D": "整形"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s129",
+  "type": "single",
+  "q": "月季盆栽用土偏（ ）性。",
+  "options": {
+   "A": "酸",
+   "B": "碱",
+   "C": "中",
+   "D": "都可以"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s130",
+  "type": "single",
+  "q": "以下种植最浅的是（ ）。",
+  "options": {
+   "A": "风信子",
+   "B": "番红花",
+   "C": "郁金香",
+   "D": "洋水仙"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s131",
+  "type": "single",
+  "q": "下列（ ）剂型的农药不宜喷雾使用。",
+  "options": {
+   "A": "粉剂",
+   "B": "可湿性粉剂",
+   "C": "乳油",
+   "D": "悬浮剂"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s132",
+  "type": "single",
+  "q": "下列（ ）组花卉为春播秋花类（又称一年生花卉） 。",
+  "options": {
+   "A": "鸡冠花、凤仙花、百日草、太阳花",
+   "B": "金鱼草、雏菊、金盏菊、三色堇",
+   "C": "百日草、太阳花、金盏菊、三色堇",
+   "D": "鸡冠花、凤仙花、金鱼草、雏菊"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s133",
+  "type": "single",
+  "q": "月季早春抽芽时追施（ ）肥料。",
+  "options": {
+   "A": "高氮肥和平衡肥交替使用",
+   "B": "开花肥",
+   "C": "高钾肥",
+   "D": "高磷肥"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s134",
+  "type": "single",
+  "q": "观赏花对肥料的要求错误的是（ ）。",
+  "options": {
+   "A": "无污染",
+   "B": "无毒",
+   "C": "速效",
+   "D": "无臭"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s135",
+  "type": "single",
+  "q": "在高温多雨的或沙质土壤上追肥要采用什么原则（ ）。",
+  "options": {
+   "A": "少次多量",
+   "B": "少量多次",
+   "C": "多施氮肥",
+   "D": "多施有机肥"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s136",
+  "type": "single",
+  "q": "下列说法错误的是（ ）。",
+  "options": {
+   "A": "木本植物灌水时间间隔要稍长",
+   "B": "一两年生花卉灌水时间间隔要稍短",
+   "C": "宿根花卉灌水时间间隔要短",
+   "D": "球根花卉灌水时间间隔要稍长"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s137",
+  "type": "single",
+  "q": "以下最不容易感染枯萎病的铁线莲是（ ）。",
+  "options": {
+   "A": "早花大花型",
+   "B": "晚花大花型",
+   "C": "意大利型",
+   "D": "弗罗里达型"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s138",
+  "type": "single",
+  "q": "引起杨树花叶病的病毒具有耐高温的特性，致死温度在（ ）℃。",
+  "options": {
+   "A": "75~80",
+   "B": "75~85",
+   "C": "70~80",
+   "D": "70~75"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s139",
+  "type": "single",
+  "q": "下列（ ）农药属于杀虫剂。",
+  "options": {
+   "A": "乐果",
+   "B": "大隆",
+   "C": "百菌清",
+   "D": "2 4-滴"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s140",
+  "type": "single",
+  "q": "关于冬剪和夏剪说法正确的是（ ）。",
+  "options": {
+   "A": "夏季修剪，没有冬季修剪准确",
+   "B": "冬季修剪的营养损失较夏季少",
+   "C": "冬剪，容易造成修剪枝梢部分冻伤",
+   "D": "冬季修剪后，夏季可不修剪"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s141",
+  "type": "single",
+  "q": "一般用作铺面石的是（ ）。",
+  "options": {
+   "A": "珍珠岩",
+   "B": "河沙",
+   "C": "陶粒",
+   "D": "蛭石"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s142",
+  "type": "single",
+  "q": "大部分草花适宜的EC值范围是（ ）。",
+  "options": {
+   "A": "0.7-1.3",
+   "B": "1.5-2.5",
+   "C": "1.0-1.8",
+   "D": "6.2-7.2"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s143",
+  "type": "single",
+  "q": "工程治理技术在治理土壤重金属污染中被广泛应用，其中，在污染土壤表层加入非污染土壤，或将非污染土壤与污染土壤混匀，使得重金属浓度降低到临界危害浓度以下，从而达到减轻危害目的的方法是（ ）。",
+  "options": {
+   "A": "客土法",
+   "B": "深耕翻土法",
+   "C": "换土法",
+   "D": "去表土法"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s144",
+  "type": "single",
+  "q": "下列不适合播种草本花卉的穴盘是（ ）。",
+  "options": {
+   "A": "128穴",
+   "B": "200穴",
+   "C": "400穴",
+   "D": "50穴"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s145",
+  "type": "single",
+  "q": "在工程设计时，为了使工程稳定，就必须有意识地创造合理的边坡，使之小于或等于自然安息角。1-2mm干粗砂土壤安息角为（ ）,1-2mm潮粗砂土壤安息角为（ ）,1-2mm湿粗砂土壤安息角为（ ）。",
+  "options": {
+   "A": "25°,45°,25°",
+   "B": "40°,35°,30°",
+   "C": "30°,32°,27°",
+   "D": "40°,40°,25°"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s146",
+  "type": "single",
+  "q": "在大、中比例尺地形图上，为了便于读图，将等高线分为首曲线、计曲线、间曲线、助曲线。其中，按等高距的1/2测绘的等高线，用虚线表示，补充显示局部形态的为（ ）。",
+  "options": {
+   "A": "首曲线",
+   "B": "计曲线",
+   "C": "间曲线",
+   "D": "助曲线"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s147",
+  "type": "single",
+  "q": "在工程设计时,为了使工程稳定,就必须有意识地创造合理的边坡,使之小于或等于自然安息角。干腐殖土土壤安息角为（ ） ，潮腐殖土土壤安息角为（ ）,湿腐殖土土壤安息角为（ ）。",
+  "options": {
+   "A": "58°,35°,25°",
+   "B": "45°,35°,25°",
+   "C": "40°,35°,25°",
+   "D": "35°,35°,15°"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s148",
+  "type": "single",
+  "q": "绿化栽植或播种前应对该地区的土壤理化性质进行化验分析，采取相应的土壤改良、施肥和置换客土等措施。根据《园林绿化工程施工及验收规范》 （CJJ82-2012）规定，小灌木、宿根花卉及小藤本栽植土壤有效土层厚度应大于（ ）cm。",
+  "options": {
+   "A": "20cm",
+   "B": "30cm",
+   "C": "40cm",
+   "D": "50cm"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s149",
+  "type": "single",
+  "q": "挖掘种植穴的时候，种植深度与苗木根系幅度、主根长度一致，通常为30-50cm，种植穴的宽度要求为（ ）。",
+  "options": {
+   "A": "40~50cm",
+   "B": "20~60cm",
+   "C": "10~30cm",
+   "D": "50~70cm"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s150",
+  "type": "single",
+  "q": "在当年枝的新梢上或花茎顶端形成花芽,当年夏秋开花，属于（ ）。",
+  "options": {
+   "A": "夏秋分化型",
+   "B": "冬春分化型",
+   "C": "多次分化型",
+   "D": "当年一次分化型"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s151",
+  "type": "single",
+  "q": "对某种花卉生长发育最快和最适宜的温度称为（ ）。",
+  "options": {
+   "A": "最适温",
+   "B": "最低温",
+   "C": "最高温",
+   "D": "较高温"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s152",
+  "type": "single",
+  "q": "以下植物光饱和点最低的是（ ）。",
+  "options": {
+   "A": "月季",
+   "B": "绣球",
+   "C": "铁线莲",
+   "D": "绿萝"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s153",
+  "type": "single",
+  "q": "胚芽没有长出之前， （ ）是第一要素。",
+  "options": {
+   "A": "肥料",
+   "B": "水分",
+   "C": "光照",
+   "D": "农药"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s154",
+  "type": "single",
+  "q": "绿萝扦插生根对水分的需求是（ ）。",
+  "options": {
+   "A": "高空气湿度低介质水分",
+   "B": "高空气湿度高介质水分",
+   "C": "低空气湿度低介质水分",
+   "D": "低空气湿度低介质水分"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s155",
+  "type": "single",
+  "q": "蒸汽消毒基质时，一般保持温度（ ）效果较好。",
+  "options": {
+   "A": "90℃-100℃",
+   "B": "80℃-90℃",
+   "C": "70℃-90℃",
+   "D": "50℃-70℃"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s156",
+  "type": "single",
+  "q": "太阳能消毒基质时，基质含水量在（ ）比较适宜。",
+  "options": {
+   "A": "30%",
+   "B": "50%",
+   "C": "70%",
+   "D": "80%"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s157",
+  "type": "single",
+  "q": "针对已经充分生长的植株，由于多年生长，需进行修根、换土重新种植，但换土不换盆，称之为（ ）。",
+  "options": {
+   "A": "换盆",
+   "B": "翻盆",
+   "C": "上盆",
+   "D": "转盆"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s158",
+  "type": "single",
+  "q": "以下不属于天南星科的观叶植物是（ ）。",
+  "options": {
+   "A": "绿萝",
+   "B": "常春藤",
+   "C": "广东万年青",
+   "D": "花叶芋"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s159",
+  "type": "single",
+  "q": "以下不属于藤蔓类观叶植物的是（ ）。",
+  "options": {
+   "A": "千叶兰",
+   "B": "绿萝",
+   "C": "紫金牛",
+   "D": "紫叶鸭跖草"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s160",
+  "type": "single",
+  "q": "（ ）处理能促成花期提前。",
+  "options": {
+   "A": "加温",
+   "B": "降温",
+   "C": "遮光",
+   "D": "照光"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s161",
+  "type": "single",
+  "q": "中国水仙的主要品种有（ ） ，水养水仙是目前国内最常见的方式。",
+  "options": {
+   "A": "11类，即“金盏银台”、“玉玲珑”等",
+   "B": "11类，即“喇叭水仙”、“大副冠水仙”等",
+   "C": "2 类，即“金盏银台”、“玉玲珑”等",
+   "D": "2 类，即“重瓣水仙”、“多花水仙”等"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s162",
+  "type": "single",
+  "q": "蔷薇一年开（ ）次花。",
+  "options": {
+   "A": "1",
+   "B": "2",
+   "C": "3",
+   "D": "4"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s163",
+  "type": "single",
+  "q": "郁金香种植如果需要元旦、春节上市，需要购买（ ）种球。",
+  "options": {
+   "A": "5℃处理球",
+   "B": "9℃处理球",
+   "C": "自然球",
+   "D": "都可以"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s164",
+  "type": "single",
+  "q": "目前市场上狭义的大花绣球一般指（ ）。",
+  "options": {
+   "A": "圆锥绣球",
+   "B": "木绣球",
+   "C": "八仙花",
+   "D": "栎叶绣球"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s165",
+  "type": "single",
+  "q": "当基质PH值在（ ）范围时，一般花开粉、红色。",
+  "options": {
+   "A": "5-5.5",
+   "B": "5.5-6.5",
+   "C": "6-6.5",
+   "D": "5-7"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s166",
+  "type": "single",
+  "q": "以下种植绣球最适合的盆是（ ）。",
+  "options": {
+   "A": "泥瓦盆",
+   "B": "陶盆",
+   "C": "塑料盆",
+   "D": "瓷盆"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s167",
+  "type": "single",
+  "q": "无花果是（ ）枝条上结果。",
+  "options": {
+   "A": "新枝",
+   "B": "老枝",
+   "C": "新老枝",
+   "D": "都有"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s168",
+  "type": "single",
+  "q": "无花果地栽区域绝对低温要求一般不要低于（ )。",
+  "options": {
+   "A": "-15℃",
+   "B": "-10℃",
+   "C": "-5℃",
+   "D": "0℃"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s169",
+  "type": "single",
+  "q": "水仙花芽分化在（ ）季节。",
+  "options": {
+   "A": "春",
+   "B": "夏",
+   "C": "秋",
+   "D": "冬"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s170",
+  "type": "single",
+  "q": "栽培过程中，为保持土壤酸性，需要每年秋季向土壤里添加（ ）。",
+  "options": {
+   "A": "缓释肥",
+   "B": "腐殖质",
+   "C": "硫酸铝",
+   "D": "硫磺粉"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s171",
+  "type": "single",
+  "q": "三角梅对温度的要求是（ ）。",
+  "options": {
+   "A": "0-10℃",
+   "B": "5-15℃",
+   "C": "15-30℃",
+   "D": "20-35℃"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s172",
+  "type": "single",
+  "q": "在阳光普照时开花，阴天或夜间花冠闭合，这是（ ）开花习性。",
+  "options": {
+   "A": "太阳花、向日葵、勋章菊",
+   "B": "月见草、虞美人、美女樱",
+   "C": "勋章菊、月见草、花菱草",
+   "D": "月见草、向日葵、酢酱草"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s173",
+  "type": "single",
+  "q": "温室空气湿度过大，一般发生在（ ）季节。",
+  "options": {
+   "A": "春",
+   "B": "夏",
+   "C": "秋",
+   "D": "冬"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s174",
+  "type": "single",
+  "q": "风车茉莉是（ ）科植物。",
+  "options": {
+   "A": "豆科",
+   "B": "忍冬科",
+   "C": "木犀科",
+   "D": "夹竹桃科"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s175",
+  "type": "single",
+  "q": "素馨是（ ）科植物。",
+  "options": {
+   "A": "豆科",
+   "B": "忍冬科",
+   "C": "木犀科",
+   "D": "夹竹桃科"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s176",
+  "type": "single",
+  "q": "多肉植物最普遍采用的繁殖方式是（ ）。",
+  "options": {
+   "A": "砍头",
+   "B": "嫁接",
+   "C": "叶插",
+   "D": "分株"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s177",
+  "type": "single",
+  "q": "华东地区切花非洲菊的定植时间最好在（ ）月份。",
+  "options": {
+   "A": "1-2月",
+   "B": "3-4月",
+   "C": "4-5月",
+   "D": "6-7月"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s178",
+  "type": "single",
+  "q": "以下属于假二叉分枝的植物是（ ）。",
+  "options": {
+   "A": "水杉",
+   "B": "柑桔",
+   "C": "丁香",
+   "D": "杨树"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s179",
+  "type": "single",
+  "q": "牵牛的茎属于（ ）。",
+  "options": {
+   "A": "球茎",
+   "B": "缠绕茎",
+   "C": "短缩茎",
+   "D": "半直立茎"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s180",
+  "type": "single",
+  "q": "在一些地形变化较大或处于河谷冲击地区的景观区域，为了防洪，需要通过设置排洪沟来预防洪水带来的危害，通常应尽量利用洪水迹线来安排排洪沟。明渠排洪沟的底宽一般不应小于（ ）。",
+  "options": {
+   "A": "100-200mm",
+   "B": "200-300mm",
+   "C": "300-400mm",
+   "D": "400-500mm"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s181",
+  "type": "single",
+  "q": "（ ）墙体在墙体中加入钢筋，与墙体自重共同来承受侧压力，从而缩小墙体截面。",
+  "options": {
+   "A": "悬臂式",
+   "B": "扶臂式",
+   "C": "半重力式",
+   "D": "重力式"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s182",
+  "type": "single",
+  "q": "小型水闸在园林水景应用中十分常见，以下属于水闸的底层结构的是（ ）。",
+  "options": {
+   "A": "护坦",
+   "B": "闸墙",
+   "C": "翼墙",
+   "D": "闸墩"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s183",
+  "type": "single",
+  "q": "在假山工程中，假山石梁或石板的两端直接放在山洞两侧的洞柱上，属于（ ）假山洞结构。",
+  "options": {
+   "A": "挑梁式",
+   "B": "劵拱式",
+   "C": "梁柱式",
+   "D": "攒尖式"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s184",
+  "type": "single",
+  "q": "图中步石排列的形式为（ ）。",
+  "options": {
+   "A": "双连排列",
+   "B": "三连排列",
+   "C": "交错排列",
+   "D": "雁行排列"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s185",
+  "type": "single",
+  "q": "园路设计中，通车园路的坡度应小于（ ）。",
+  "options": {
+   "A": "3%",
+   "B": "5%",
+   "C": "8%",
+   "D": "10%"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s186",
+  "type": "single",
+  "q": "在对碎石垫层碾压时使用（ ）进行，碾压时做到无漏压、无死角并保证碾压均匀。",
+  "options": {
+   "A": "锤子",
+   "B": "夯实机",
+   "C": "平板振动器",
+   "D": "抹子"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s187",
+  "type": "single",
+  "q": "在工程现场向箱笼内填充一定规格的，满足一定要求的石料,以形成自透水的、柔性的、生态的防护结构是（ ）。",
+  "options": {
+   "A": "编柳抛石护坡",
+   "B": "铺石护坡",
+   "C": "草皮护坡",
+   "D": "石笼护坡"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s188",
+  "type": "single",
+  "q": "以下花卉耐热性最强的是（ ）。",
+  "options": {
+   "A": "雏菊",
+   "B": "郁金香",
+   "C": "花毛茛",
+   "D": "一串红"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s189",
+  "type": "single",
+  "q": "一般室内观叶植物适合（ ）环境。",
+  "options": {
+   "A": "半阴",
+   "B": "充足光照",
+   "C": "都可以",
+   "D": "长时间强光照"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s190",
+  "type": "single",
+  "q": "灌溉水的PH值在（ ）间最理想。",
+  "options": {
+   "A": "5-8.5",
+   "B": "5-7",
+   "C": "5-6",
+   "D": "6-8"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s191",
+  "type": "single",
+  "q": "一般促进植物开花的是（ ）。",
+  "options": {
+   "A": "氮肥",
+   "B": "磷肥",
+   "C": "钾肥",
+   "D": "钙肥"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s192",
+  "type": "single",
+  "q": "作物在整个生育期中，有一个时期吸收养分的绝对数量和相对数量都最多，肥料利用率最大，这个时期叫做（ ）。",
+  "options": {
+   "A": "作物营养临界期",
+   "B": "作物营养最大效率期",
+   "C": "作物营养敏感期",
+   "D": "作物营养期"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s193",
+  "type": "single",
+  "q": "室内观叶植物施肥以（ ）肥为主。",
+  "options": {
+   "A": "P",
+   "B": "K",
+   "C": "N",
+   "D": "GA"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s194",
+  "type": "single",
+  "q": "雕刻水仙的开花期主要集中在（ ）。",
+  "options": {
+   "A": "10月",
+   "B": "11月",
+   "C": "2月份",
+   "D": "4月份"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s195",
+  "type": "single",
+  "q": "大花绣球对肥料的需求表现为（ ）。",
+  "options": {
+   "A": "需求少",
+   "B": "需求大",
+   "C": "都可以",
+   "D": "需求较少"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s196",
+  "type": "single",
+  "q": "无花果的保果肥以（ ）肥为主。",
+  "options": {
+   "A": "N",
+   "B": "P",
+   "C": "K",
+   "D": "N、P、K 配合"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s197",
+  "type": "single",
+  "q": "无花果的越冬肥在（ ）时候施。",
+  "options": {
+   "A": "早春",
+   "B": "入冬前",
+   "C": "冬季",
+   "D": "采收期"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s198",
+  "type": "single",
+  "q": "三角梅对肥料的需求是（ ）。",
+  "options": {
+   "A": "越多越好",
+   "B": "充足",
+   "C": "适当控肥",
+   "D": "都可以"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s199",
+  "type": "single",
+  "q": "大丽花生长的温度范围为（ ）。",
+  "options": {
+   "A": "10℃-32℃",
+   "B": "10℃-20℃",
+   "C": "15℃-25℃",
+   "D": "5℃-25℃"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s200",
+  "type": "single",
+  "q": "多肉生长太过密集，长满整个花盆，称为（ ）。",
+  "options": {
+   "A": "老桩",
+   "B": "闷养",
+   "C": "爆盆",
+   "D": "抽花箭"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s201",
+  "type": "single",
+  "q": "观花类植物不能缺（ ）。",
+  "options": {
+   "A": "氮肥",
+   "B": "钾肥",
+   "C": "锌肥",
+   "D": "磷肥"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s202",
+  "type": "single",
+  "q": "月季常见的黑斑病可定期喷（ ）药液防治。",
+  "options": {
+   "A": "代森锌",
+   "B": "粉锈宁",
+   "C": "阿维菌素",
+   "D": "除虫菊酯"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s203",
+  "type": "single",
+  "q": "阴雨天如连续闷棚易引起非洲菊花瓣发生大量斑点，使（ ）爆发。",
+  "options": {
+   "A": "灰霉病",
+   "B": "枯萎病",
+   "C": "炭蛆病",
+   "D": "红蜘蛛"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s204",
+  "type": "single",
+  "q": "台风天成株苗受大风刮伤和雨水冲击，极易引起损伤而引发（ ）。",
+  "options": {
+   "A": "灰霉病",
+   "B": "枯萎病",
+   "C": "炭蛆病",
+   "D": "红蜘蛛"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s205",
+  "type": "single",
+  "q": "棉花立枯病在菌期为害棉苗，造成死苗，是典型的（ ）。",
+  "options": {
+   "A": "虫传病害",
+   "B": "气传病害",
+   "C": "土传病害",
+   "D": "水传病害"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s206",
+  "type": "single",
+  "q": "将植物病害分为单循环病害、多循环病害是根据（ ）。",
+  "options": {
+   "A": "初次浸染的菌量",
+   "B": "再次侵染的菌量",
+   "C": "再次侵染的次数",
+   "D": "病原种类"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s207",
+  "type": "single",
+  "q": "木材中的淀粉含量约为（ ）。",
+  "options": {
+   "A": "2%~6%",
+   "B": "40%~60",
+   "C": "1 5%~6%",
+   "D": "2%~4%"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s208",
+  "type": "single",
+  "q": "药剂在边材的浸透深度只要达到（ ）深就完全可以避免甲虫类蛀害。",
+  "options": {
+   "A": "2~3mm",
+   "B": "3~5mm",
+   "C": "3~4mm",
+   "D": "5~8mm"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s209",
+  "type": "single",
+  "q": "能够对苗木猝倒病病原丝核菌有良好的杀伤效果的药剂是（ ）。",
+  "options": {
+   "A": "波尔多液",
+   "B": "五氯硝基苯",
+   "C": "代森锌",
+   "D": "托布津"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s210",
+  "type": "single",
+  "q": "病毒常引起花叶症状，它是（ ）寄生物。",
+  "options": {
+   "A": "专性寄生",
+   "B": "专性腐生",
+   "C": "兼性寄生",
+   "D": "兼性腐生"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s211",
+  "type": "single",
+  "q": "下列（ ）农药属于负温度系数的农药。",
+  "options": {
+   "A": "有机磷",
+   "B": "氨基甲酸酯",
+   "C": "拟除虫菊酯",
+   "D": "苯氧羧酸"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s212",
+  "type": "single",
+  "q": "害虫（ ）时期对农药敏感。",
+  "options": {
+   "A": "卵期",
+   "B": "幼虫期",
+   "C": "蛹期",
+   "D": "成虫期"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s213",
+  "type": "single",
+  "q": "下列（ ）农药属于杀菌剂。",
+  "options": {
+   "A": "草甘膦",
+   "B": "吡虫啉",
+   "C": "百菌清",
+   "D": "乐果"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s214",
+  "type": "single",
+  "q": "早花大花型铁线莲的重剪一般在（ ）。",
+  "options": {
+   "A": "春秋季",
+   "B": "夏季",
+   "C": "冬季",
+   "D": "花后"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s215",
+  "type": "single",
+  "q": "晚花大花型铁线莲的重剪一般在（ ）。",
+  "options": {
+   "A": "春秋季",
+   "B": "夏季",
+   "C": "冬季",
+   "D": "花后"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s216",
+  "type": "single",
+  "q": "植物造景特性为向上引导视线，突出空间的垂直界面的植物外形为（ ）。",
+  "options": {
+   "A": "垂枝形",
+   "B": "水平展开形",
+   "C": "圆球形",
+   "D": "纺锤形"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s217",
+  "type": "single",
+  "q": "高度为3-4.5米，主要造景应用为塑造垂直空间、屏障视线或作为背景植物使用的植物类型为（ ）。",
+  "options": {
+   "A": "中灌木",
+   "B": "矮小灌木",
+   "C": "高灌木",
+   "D": "小乔木"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s218",
+  "type": "single",
+  "q": "（ ）外形植物是水路边界常用的植物材料，造景特性可将视线引向地面（ ）。",
+  "options": {
+   "A": "垂枝形",
+   "B": "圆球形",
+   "C": "水平展开形",
+   "D": "圆锥形"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s219",
+  "type": "single",
+  "q": "苗木栽植前的修剪应根据各地自然条件，根据《园林绿化工程施工及验收规范》（CJJ82-2012）规定，关于常绿乔木修剪，以下说法正确的是（ ）。",
+  "options": {
+   "A": "常绿阔叶乔木具有轮生侧枝，作行道树时，可剪除基部1 层-2层轮生侧枝",
+   "B": "柏类苗木应定期修剪树形",
+   "C": "修剪松树类苗木枝条时基部应留2cm-3cm木橛",
+   "D": "常绿阔叶乔木枝叶集生树干顶部的苗木可不修剪"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s220",
+  "type": "single",
+  "q": "行道树种植的苗木根系形态要求是（ ）。",
+  "options": {
+   "A": "根系完整，侧根保留",
+   "B": "根系减少，主根截断",
+   "C": "主根截断，侧根减少",
+   "D": "主根不剪，侧根减少"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s221",
+  "type": "single",
+  "q": "根据《公园设计规范》 （GB51192-2016） ，古树名木单株树应同时满足树冠垂直投影以外（ ）m宽和距树干基部外缘水平距离胸径（ ）倍以内。",
+  "options": {
+   "A": "3，10",
+   "B": "5，10",
+   "C": "3，20",
+   "D": "5，20"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s222",
+  "type": "single",
+  "q": "树龄100年的树木，为（ ）级古树。",
+  "options": {
+   "A": "一",
+   "B": "二",
+   "C": "三",
+   "D": "四"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s223",
+  "type": "single",
+  "q": "三级保护的古树保护范围不小于树冠垂直投影外（ ）米。",
+  "options": {
+   "A": "2",
+   "B": "3",
+   "C": "5",
+   "D": "8"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s224",
+  "type": "single",
+  "q": "一般1、2年生的铁线莲用（ ）高的竹竿绑缚比较合适。",
+  "options": {
+   "A": "2m",
+   "B": "1m",
+   "C": "60cm",
+   "D": "都可以"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s225",
+  "type": "single",
+  "q": "根据起掘和包扎方式不同分为土球挖掘、木箱挖掘、裸根挖掘三种不同的挖掘包扎方法，以下不适合裸根挖掘的树种为（ ）。",
+  "options": {
+   "A": "国槐",
+   "B": "刺槐",
+   "C": "火炬树",
+   "D": "罗汉松"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s226",
+  "type": "single",
+  "q": "以下在低温下花芽分化的有（ ）。",
+  "options": {
+   "A": "八仙花",
+   "B": "三角梅",
+   "C": "郁金香",
+   "D": "金盏菊"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s227",
+  "type": "single",
+  "q": "下列能从叶缘长出小植株分离后用于繁殖的是（ ）。",
+  "options": {
+   "A": "黑法师",
+   "B": "落地生根",
+   "C": "玉露",
+   "D": "小球玫瑰"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s228",
+  "type": "single",
+  "q": "郁金香是（ ）科球根花卉。",
+  "options": {
+   "A": "百合科",
+   "B": "石蒜科",
+   "C": "鸢尾科",
+   "D": "天南星科"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s229",
+  "type": "single",
+  "q": "风信子是（ ）科球根花卉。",
+  "options": {
+   "A": "百合科",
+   "B": "石蒜科",
+   "C": "鸢尾科",
+   "D": "天南星科"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s230",
+  "type": "single",
+  "q": "百合是（ ）科植物。",
+  "options": {
+   "A": "报春花科",
+   "B": "石蒜科",
+   "C": "百合科",
+   "D": "天南星科"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s231",
+  "type": "single",
+  "q": "唐菖蒲是（ ）植物。",
+  "options": {
+   "A": "短日照",
+   "B": "日中性",
+   "C": "长日照",
+   "D": "中日照"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s232",
+  "type": "single",
+  "q": "使用花岗岩、大理石、拼花木板和塑料地板做园林铺装时，相邻两块块料面层的高低允许偏差在（ ）mm以内。",
+  "options": {
+   "A": "2.5mm",
+   "B": "1.5mm",
+   "C": "1mm",
+   "D": "0.5mm"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s233",
+  "type": "single",
+  "q": "湿帘降温系统中的湿帘一般安装在温室（ ）墙上。",
+  "options": {
+   "A": "东",
+   "B": "南",
+   "C": "西",
+   "D": "北"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s234",
+  "type": "single",
+  "q": "三角梅的控水一般在（ ）。",
+  "options": {
+   "A": "3-4月",
+   "B": "5-6月",
+   "C": "6-7 月",
+   "D": "8-9 月"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s235",
+  "type": "single",
+  "q": "以下切花在华东地区栽培可以露地越冬的有（ ）。",
+  "options": {
+   "A": "切花月季",
+   "B": "切花非洲菊",
+   "C": "切花马蹄莲",
+   "D": "切花天堂鸟"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s236",
+  "type": "single",
+  "q": "以下哪项不是三角梅常见的虫害（ ）。",
+  "options": {
+   "A": "叶甲",
+   "B": "蚜虫",
+   "C": "蚧壳虫",
+   "D": "红蜘蛛"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s237",
+  "type": "single",
+  "q": "蓝莓开花期在（ ）。",
+  "options": {
+   "A": "春",
+   "B": "夏",
+   "C": "秋",
+   "D": "冬"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s238",
+  "type": "single",
+  "q": "京九红忍冬是（ ）科植物。",
+  "options": {
+   "A": "豆科",
+   "B": "忍冬科",
+   "C": "木犀科",
+   "D": "夹竹桃科"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s239",
+  "type": "single",
+  "q": "土壤过酸或过碱时，应该采取哪些措施来调整土壤的酸碱度（ ）。",
+  "options": {
+   "A": "增施有机肥",
+   "B": "施用碱性或酸性肥料",
+   "C": "增加灌溉次数",
+   "D": "减少田间积水"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s240",
+  "type": "single",
+  "q": "（ ）为现场常备机具，体形小，轻便。适用，操作简单，但损实深度有限。适于小面积粘性土薄层回填上振实。",
+  "options": {
+   "A": "平板式振动器",
+   "B": "小型打夯机",
+   "C": "羊足压路碌",
+   "D": "压路机"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s241",
+  "type": "single",
+  "q": "不属于花坛常用砌合方法是（ ）。",
+  "options": {
+   "A": "一顺一丁",
+   "B": "四顺一丁",
+   "C": "梅花丁",
+   "D": "条砌法"
+  },
+  "a": ""
+ },
+ {
+  "id": "s242",
+  "type": "single",
+  "q": "（ ）的特点是整体性好，但墙体交接处砍砖较多。",
+  "options": {
+   "A": "一顺一丁",
+   "B": "三顺一丁",
+   "C": "梅花丁",
+   "D": "条砌法"
+  },
+  "a": ""
+ },
+ {
+  "id": "s243",
+  "type": "single",
+  "q": "草坪灯高度应限制在（ ）。",
+  "options": {
+   "A": "0.5m 以下",
+   "B": "0.7m以下",
+   "C": "1m以下",
+   "D": "1.2m以下"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s244",
+  "type": "single",
+  "q": "绿化栽植或播种前应对该地区的土壤理化性质进行化验分析，采取相应的土壤改良、施肥和置换客土等措施。根据《园林绿化工程施工及验收规范》 （CJJ82-2012）规定，草坪栽植土壤有效土层厚度应大于（ ）cm。",
+  "options": {
+   "A": "20cm",
+   "B": "25cm",
+   "C": "30cm",
+   "D": "35cm"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s245",
+  "type": "single",
+  "q": "下列（ ）组花卉最适合南方炎热的夏季花坛布置。",
+  "options": {
+   "A": "雏菊、金盏菊、金鱼草、藿香蓟",
+   "B": "雏菊、金盏菊、三色堇、桂竹香",
+   "C": "矮牵牛、三色堇、香雪球、藿香蓟",
+   "D": "太阳花、鸡冠花、千日红、彩叶草"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s246",
+  "type": "single",
+  "q": "法国香水（金钩吻）是（ ）科植物。",
+  "options": {
+   "A": "豆科",
+   "B": "忍冬科",
+   "C": "木犀科",
+   "D": "夹竹桃科"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s247",
+  "type": "single",
+  "q": "常春油麻藤是（ ）性木质藤本。",
+  "options": {
+   "A": "缠绕性",
+   "B": "吸附性",
+   "C": "匍匐性",
+   "D": "无自主攀爬能力"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s248",
+  "type": "single",
+  "q": "中国水仙的自然花期一般在（ ）。",
+  "options": {
+   "A": "1-2月份",
+   "B": "3-4月份",
+   "C": "5-6月份",
+   "D": "7-8月份"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s249",
+  "type": "single",
+  "q": "姬胧月目前最常见的繁殖方法是（ ）。",
+  "options": {
+   "A": "叶插",
+   "B": "分株",
+   "C": "播种",
+   "D": "砍头"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s250",
+  "type": "single",
+  "q": "园林中的花坛、挡土墙等砌体所用的砖须经受雨水、地下水等侵蚀，故采用（ ）等。",
+  "options": {
+   "A": "灰砂砖",
+   "B": "黏土烧结实心砖",
+   "C": "加气砖",
+   "D": "粉煤灰砖"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s251",
+  "type": "single",
+  "q": "除悬崖外， （ ）不能相交，也不能重叠，而悬崖、峭壁则用特殊符号表示。",
+  "options": {
+   "A": "零点线",
+   "B": "调配线",
+   "C": "填挖线",
+   "D": "等高线"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s252",
+  "type": "single",
+  "q": "铺石护坡应有足够的（ ）以减少土壤从护坡上面流失，还需在块石下面设倒滤层垫底。",
+  "options": {
+   "A": "保水性",
+   "B": "坚固性",
+   "C": "透水性",
+   "D": "抗压性"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s253",
+  "type": "single",
+  "q": "月季冬季修剪后涂抹（ ）预防病虫害的效果比较好。",
+  "options": {
+   "A": "代森锌",
+   "B": "石硫合剂",
+   "C": "阿维菌素",
+   "D": "苯醚甲环唑"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s254",
+  "type": "single",
+  "q": "什么主要发生在西北地区，特别是新疆、甘肃一带发生较重（ ）。",
+  "options": {
+   "A": "山楂叶螨",
+   "B": "苹果全爪螨",
+   "C": "李始叶螨",
+   "D": "二斑叶螨"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s255",
+  "type": "single",
+  "q": "栗瘿蚊危害板栗、锥栗的幼芽，使受害芽（ ）时形成瘤状虫瘿，影响新梢和开花结实。",
+  "options": {
+   "A": "春季",
+   "B": "夏季",
+   "C": "秋季",
+   "D": "冬季"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s256",
+  "type": "single",
+  "q": "云杉锈病的病原菌冬孢子一般在6 月中旬萌发，产生担子和担孢子，而担孢子主要通过（ ）传播到云杉幼嫩针叶上侵染。",
+  "options": {
+   "A": "温度",
+   "B": "湿度",
+   "C": "气流",
+   "D": "雨"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s257",
+  "type": "single",
+  "q": "苹果锈病的病原菌的转主寄主是（ ）。",
+  "options": {
+   "A": "十大功劳",
+   "B": "桉树",
+   "C": "桧柏",
+   "D": "梨树"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s258",
+  "type": "single",
+  "q": "下列植物中不适合作盆景材料的是（ ）。",
+  "options": {
+   "A": "槭树",
+   "B": "泡桐",
+   "C": "日本五针松",
+   "D": "红檵木"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s259",
+  "type": "single",
+  "q": "道路绿化树木的树形多种多样，下列哪一树种的树冠是浑圆对称（ ）。",
+  "options": {
+   "A": "桂花",
+   "B": "香泡",
+   "C": "榉树",
+   "D": "杜英"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s260",
+  "type": "single",
+  "q": "根据《公园设计规范》 （GB51192-2016） ，古树名木成林地带保护范围的划定为外缘树树冠垂直投影以外（ ）所围合的范围。",
+  "options": {
+   "A": "3m",
+   "B": "5m",
+   "C": "8m",
+   "D": "10m"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s261",
+  "type": "single",
+  "q": "下列保水性最好的介质是（ ）。",
+  "options": {
+   "A": "泥炭",
+   "B": "珍珠岩",
+   "C": "陶粒",
+   "D": "树皮"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s262",
+  "type": "single",
+  "q": "下列最适合做排水层的是（ ）。",
+  "options": {
+   "A": "陶粒",
+   "B": "泥炭",
+   "C": "珍珠岩",
+   "D": "蛭石"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s263",
+  "type": "single",
+  "q": "下列最适合大部分植物生长的土壤是（ ）。",
+  "options": {
+   "A": "沙土",
+   "B": "黏土",
+   "C": "黄泥土",
+   "D": "壤土"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s264",
+  "type": "single",
+  "q": "平畦的特点（ ）。",
+  "options": {
+   "A": "土地利用率高",
+   "B": "保水性强",
+   "C": "土壤蒸发量大",
+   "D": "用工少"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s265",
+  "type": "single",
+  "q": "不能用做覆盖材料的是（ ）。",
+  "options": {
+   "A": "秸秆",
+   "B": "沙",
+   "C": "普通地膜",
+   "D": "细土"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s266",
+  "type": "single",
+  "q": "最好的扦插枝条为（ ）。",
+  "options": {
+   "A": "健壮充实的枝条",
+   "B": "阴生枝",
+   "C": "老枝",
+   "D": "病枝"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s267",
+  "type": "single",
+  "q": "除了多肉植物，剪穗过程中最重要的是（ ）。",
+  "options": {
+   "A": "消毒",
+   "B": "保湿",
+   "C": "修剪",
+   "D": "低温"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s268",
+  "type": "single",
+  "q": "对一些花叶品种的观叶植物出现返祖现象时，应该及时（ ）。",
+  "options": {
+   "A": "去异",
+   "B": "摘心",
+   "C": "换盆",
+   "D": "整形"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s269",
+  "type": "single",
+  "q": "月季盆栽用土偏（ ）性。",
+  "options": {
+   "A": "酸",
+   "B": "碱",
+   "C": "中",
+   "D": "都可以"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s270",
+  "type": "single",
+  "q": "以下种植最浅的是（ ）。",
+  "options": {
+   "A": "风信子",
+   "B": "番红花",
+   "C": "郁金香",
+   "D": "洋水仙"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s271",
+  "type": "single",
+  "q": "下列（ ）剂型的农药不宜喷雾使用。",
+  "options": {
+   "A": "粉剂",
+   "B": "可湿性粉剂",
+   "C": "乳油",
+   "D": "悬浮剂"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s272",
+  "type": "single",
+  "q": "下列（ ）组花卉为春播秋花类（又称一年生花卉） 。",
+  "options": {
+   "A": "鸡冠花、凤仙花、百日草、太阳花",
+   "B": "金鱼草、雏菊、金盏菊、三色堇",
+   "C": "百日草、太阳花、金盏菊、三色堇",
+   "D": "鸡冠花、凤仙花、金鱼草、雏菊"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s273",
+  "type": "single",
+  "q": "月季早春抽芽时追施（ ）肥料。",
+  "options": {
+   "A": "高氮肥和平衡肥交替使用",
+   "B": "开花肥",
+   "C": "高钾肥",
+   "D": "高磷肥"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s274",
+  "type": "single",
+  "q": "观赏花对肥料的要求错误的是（ ）。",
+  "options": {
+   "A": "无污染",
+   "B": "无毒",
+   "C": "速效",
+   "D": "无臭"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s275",
+  "type": "single",
+  "q": "在高温多雨的或沙质土壤上追肥要采用什么原则（ ）。",
+  "options": {
+   "A": "少次多量",
+   "B": "少量多次",
+   "C": "多施氮肥",
+   "D": "多施有机肥"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s276",
+  "type": "single",
+  "q": "下列说法错误的是（ ）。",
+  "options": {
+   "A": "木本植物灌水时间间隔要稍长",
+   "B": "一两年生花卉灌水时间间隔要稍短",
+   "C": "宿根花卉灌水时间间隔要短",
+   "D": "球根花卉灌水时间间隔要稍长"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s277",
+  "type": "single",
+  "q": "以下最不容易感染枯萎病的铁线莲是（ ）。",
+  "options": {
+   "A": "早花大花型",
+   "B": "晚花大花型",
+   "C": "意大利型",
+   "D": "弗罗里达型"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s278",
+  "type": "single",
+  "q": "引起杨树花叶病的病毒具有耐高温的特性，致死温度在（ ）℃。",
+  "options": {
+   "A": "75~80",
+   "B": "75~85",
+   "C": "70~80",
+   "D": "70~75"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s279",
+  "type": "single",
+  "q": "下列（ ）农药属于杀虫剂。",
+  "options": {
+   "A": "乐果",
+   "B": "大隆",
+   "C": "百菌清",
+   "D": "2 4-滴"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s280",
+  "type": "single",
+  "q": "关于冬剪和夏剪说法正确的是（ ）。",
+  "options": {
+   "A": "夏季修剪，没有冬季修剪准确",
+   "B": "冬季修剪的营养损失较夏季少",
+   "C": "冬剪，容易造成修剪枝梢部分冻伤",
+   "D": "冬季修剪后，夏季可不修剪"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s281",
+  "type": "single",
+  "q": "一般用作铺面石的是（ ）。",
+  "options": {
+   "A": "珍珠岩",
+   "B": "河沙",
+   "C": "陶粒",
+   "D": "蛭石"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s282",
+  "type": "single",
+  "q": "大部分草花适宜的EC值范围是（ ）。",
+  "options": {
+   "A": "0.7-1.3",
+   "B": "1.5-2.5",
+   "C": "1.0-1.8",
+   "D": "6.2-7.2"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s283",
+  "type": "single",
+  "q": "工程治理技术在治理土壤重金属污染中被广泛应用，其中，在污染土壤表层加入非污染土壤，或将非污染土壤与污染土壤混匀，使得重金属浓度降低到临界危害浓度以下，从而达到减轻危害目的的方法是（ ）。",
+  "options": {
+   "A": "客土法",
+   "B": "深耕翻土法",
+   "C": "换土法",
+   "D": "去表土法"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s284",
+  "type": "single",
+  "q": "下列不适合播种草本花卉的穴盘是（ ）。",
+  "options": {
+   "A": "128穴",
+   "B": "200穴",
+   "C": "400穴",
+   "D": "50穴"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s285",
+  "type": "single",
+  "q": "在工程设计时，为了使工程稳定，就必须有意识地创造合理的边坡，使之小于或等于自然安息角。1-2mm干粗砂土壤安息角为（ ）,1-2mm潮粗砂土壤安息角为（ ）,1-2mm湿粗砂土壤安息角为（ ）。",
+  "options": {
+   "A": "25°,45°,25°",
+   "B": "40°,35°,30°",
+   "C": "30°,32°,27°",
+   "D": "40°,40°,25°"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s286",
+  "type": "single",
+  "q": "在大、中比例尺地形图上，为了便于读图，将等高线分为首曲线、计曲线、间曲线、助曲线。其中，按等高距的1/2测绘的等高线，用虚线表示，补充显示局部形态的为（ ）。",
+  "options": {
+   "A": "首曲线",
+   "B": "计曲线",
+   "C": "间曲线",
+   "D": "助曲线"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s287",
+  "type": "single",
+  "q": "在工程设计时,为了使工程稳定,就必须有意识地创造合理的边坡,使之小于或等于自然安息角。干腐殖土土壤安息角为（ ） ，潮腐殖土土壤安息角为（ ）,湿腐殖土土壤安息角为（ ）。",
+  "options": {
+   "A": "58°,35°,25°",
+   "B": "45°,35°,25°",
+   "C": "40°,35°,25°",
+   "D": "35°,35°,15°"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s288",
+  "type": "single",
+  "q": "绿化栽植或播种前应对该地区的土壤理化性质进行化验分析，采取相应的土壤改良、施肥和置换客土等措施。根据《园林绿化工程施工及验收规范》 （CJJ82-2012）规定，小灌木、宿根花卉及小藤本栽植土壤有效土层厚度应大于（ ）cm。",
+  "options": {
+   "A": "20cm",
+   "B": "30cm",
+   "C": "40cm",
+   "D": "50cm"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s289",
+  "type": "single",
+  "q": "挖掘种植穴的时候，种植深度与苗木根系幅度、主根长度一致，通常为30-50cm，种植穴的宽度要求为（ ）。",
+  "options": {
+   "A": "40~50cm",
+   "B": "20~60cm",
+   "C": "10~30cm",
+   "D": "50~70cm"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s290",
+  "type": "single",
+  "q": "在当年枝的新梢上或花茎顶端形成花芽,当年夏秋开花，属于（ ）。",
+  "options": {
+   "A": "夏秋分化型",
+   "B": "冬春分化型",
+   "C": "多次分化型",
+   "D": "当年一次分化型"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s291",
+  "type": "single",
+  "q": "对某种花卉生长发育最快和最适宜的温度称为（ ）。",
+  "options": {
+   "A": "最适温",
+   "B": "最低温",
+   "C": "最高温",
+   "D": "较高温"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s292",
+  "type": "single",
+  "q": "以下植物光饱和点最低的是（ ）。",
+  "options": {
+   "A": "月季",
+   "B": "绣球",
+   "C": "铁线莲",
+   "D": "绿萝"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s293",
+  "type": "single",
+  "q": "胚芽没有长出之前， （ ）是第一要素。",
+  "options": {
+   "A": "肥料",
+   "B": "水分",
+   "C": "光照",
+   "D": "农药"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s294",
+  "type": "single",
+  "q": "绿萝扦插生根对水分的需求是（ ）。",
+  "options": {
+   "A": "高空气湿度低介质水分",
+   "B": "高空气湿度高介质水分",
+   "C": "低空气湿度低介质水分",
+   "D": "低空气湿度低介质水分"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s295",
+  "type": "single",
+  "q": "蒸汽消毒基质时，一般保持温度（ ）效果较好。",
+  "options": {
+   "A": "90℃-100℃",
+   "B": "80℃-90℃",
+   "C": "70℃-90℃",
+   "D": "50℃-70℃"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s296",
+  "type": "single",
+  "q": "太阳能消毒基质时，基质含水量在（ ）比较适宜。",
+  "options": {
+   "A": "30%",
+   "B": "50%",
+   "C": "70%",
+   "D": "80%"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s297",
+  "type": "single",
+  "q": "针对已经充分生长的植株，由于多年生长，需进行修根、换土重新种植，但换土不换盆，称之为（ ）。",
+  "options": {
+   "A": "换盆",
+   "B": "翻盆",
+   "C": "上盆",
+   "D": "转盆"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s298",
+  "type": "single",
+  "q": "以下不属于天南星科的观叶植物是（ ）。",
+  "options": {
+   "A": "绿萝",
+   "B": "常春藤",
+   "C": "广东万年青",
+   "D": "花叶芋"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s299",
+  "type": "single",
+  "q": "以下不属于藤蔓类观叶植物的是（ ）。",
+  "options": {
+   "A": "千叶兰",
+   "B": "绿萝",
+   "C": "紫金牛",
+   "D": "紫叶鸭跖草"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s300",
+  "type": "single",
+  "q": "（ ）处理能促成花期提前。",
+  "options": {
+   "A": "加温",
+   "B": "降温",
+   "C": "遮光",
+   "D": "照光"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s301",
+  "type": "single",
+  "q": "中国水仙的主要品种有（ ） ，水养水仙是目前国内最常见的方式。",
+  "options": {
+   "A": "11类，即“金盏银台”、“玉玲珑”等",
+   "B": "11类，即“喇叭水仙”、“大副冠水仙”等",
+   "C": "2 类，即“金盏银台”、“玉玲珑”等",
+   "D": "2 类，即“重瓣水仙”、“多花水仙”等"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s302",
+  "type": "single",
+  "q": "蔷薇一年开（ ）次花。",
+  "options": {
+   "A": "1",
+   "B": "2",
+   "C": "3",
+   "D": "4"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s303",
+  "type": "single",
+  "q": "郁金香种植如果需要元旦、春节上市，需要购买（ ）种球。",
+  "options": {
+   "A": "5℃处理球",
+   "B": "9℃处理球",
+   "C": "自然球",
+   "D": "都可以"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s304",
+  "type": "single",
+  "q": "目前市场上狭义的大花绣球一般指（ ）。",
+  "options": {
+   "A": "圆锥绣球",
+   "B": "木绣球",
+   "C": "八仙花",
+   "D": "栎叶绣球"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s305",
+  "type": "single",
+  "q": "当基质PH值在（ ）范围时，一般花开粉、红色。",
+  "options": {
+   "A": "5-5.5",
+   "B": "5.5-6.5",
+   "C": "6-6.5",
+   "D": "5-7"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s306",
+  "type": "single",
+  "q": "以下种植绣球最适合的盆是（ ）。",
+  "options": {
+   "A": "泥瓦盆",
+   "B": "陶盆",
+   "C": "塑料盆",
+   "D": "瓷盆"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s307",
+  "type": "single",
+  "q": "无花果是（ ）枝条上结果。",
+  "options": {
+   "A": "新枝",
+   "B": "老枝",
+   "C": "新老枝",
+   "D": "都有"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s308",
+  "type": "single",
+  "q": "无花果地栽区域绝对低温要求一般不要低于（ )。",
+  "options": {
+   "A": "-15℃",
+   "B": "-10℃",
+   "C": "-5℃",
+   "D": "0℃"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s309",
+  "type": "single",
+  "q": "水仙花芽分化在（ ）季节。",
+  "options": {
+   "A": "春",
+   "B": "夏",
+   "C": "秋",
+   "D": "冬"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s310",
+  "type": "single",
+  "q": "栽培过程中，为保持土壤酸性，需要每年秋季向土壤里添加（ ）。",
+  "options": {
+   "A": "缓释肥",
+   "B": "腐殖质",
+   "C": "硫酸铝",
+   "D": "硫磺粉"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s311",
+  "type": "single",
+  "q": "三角梅对温度的要求是（ ）。",
+  "options": {
+   "A": "0-10℃",
+   "B": "5-15℃",
+   "C": "15-30℃",
+   "D": "20-35℃"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s312",
+  "type": "single",
+  "q": "在阳光普照时开花，阴天或夜间花冠闭合，这是（ ）开花习性。",
+  "options": {
+   "A": "太阳花、向日葵、勋章菊",
+   "B": "月见草、虞美人、美女樱",
+   "C": "勋章菊、月见草、花菱草",
+   "D": "月见草、向日葵、酢酱草"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s313",
+  "type": "single",
+  "q": "温室空气湿度过大，一般发生在（ ）季节。",
+  "options": {
+   "A": "春",
+   "B": "夏",
+   "C": "秋",
+   "D": "冬"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s314",
+  "type": "single",
+  "q": "风车茉莉是（ ）科植物。",
+  "options": {
+   "A": "豆科",
+   "B": "忍冬科",
+   "C": "木犀科",
+   "D": "夹竹桃科"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s315",
+  "type": "single",
+  "q": "素馨是（ ）科植物。",
+  "options": {
+   "A": "豆科",
+   "B": "忍冬科",
+   "C": "木犀科",
+   "D": "夹竹桃科"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s316",
+  "type": "single",
+  "q": "多肉植物最普遍采用的繁殖方式是（ ）。",
+  "options": {
+   "A": "砍头",
+   "B": "嫁接",
+   "C": "叶插",
+   "D": "分株"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s317",
+  "type": "single",
+  "q": "华东地区切花非洲菊的定植时间最好在（ ）月份。",
+  "options": {
+   "A": "1-2月",
+   "B": "3-4月",
+   "C": "4-5月",
+   "D": "6-7月"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s318",
+  "type": "single",
+  "q": "以下属于假二叉分枝的植物是（ ）。",
+  "options": {
+   "A": "水杉",
+   "B": "柑桔",
+   "C": "丁香",
+   "D": "杨树"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s319",
+  "type": "single",
+  "q": "牵牛的茎属于（ ）。",
+  "options": {
+   "A": "球茎",
+   "B": "缠绕茎",
+   "C": "短缩茎",
+   "D": "半直立茎"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s320",
+  "type": "single",
+  "q": "在一些地形变化较大或处于河谷冲击地区的景观区域，为了防洪，需要通过设置排洪沟来预防洪水带来的危害，通常应尽量利用洪水迹线来安排排洪沟。明渠排洪沟的底宽一般不应小于（ ）。",
+  "options": {
+   "A": "100-200mm",
+   "B": "200-300mm",
+   "C": "300-400mm",
+   "D": "400-500mm"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s321",
+  "type": "single",
+  "q": "（ ）墙体在墙体中加入钢筋，与墙体自重共同来承受侧压力，从而缩小墙体截面。",
+  "options": {
+   "A": "悬臂式",
+   "B": "扶臂式",
+   "C": "半重力式",
+   "D": "重力式"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s322",
+  "type": "single",
+  "q": "小型水闸在园林水景应用中十分常见，以下属于水闸的底层结构的是（ ）。",
+  "options": {
+   "A": "护坦",
+   "B": "闸墙",
+   "C": "翼墙",
+   "D": "闸墩"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s323",
+  "type": "single",
+  "q": "在假山工程中，假山石梁或石板的两端直接放在山洞两侧的洞柱上，属于（ ）假山洞结构。",
+  "options": {
+   "A": "挑梁式",
+   "B": "劵拱式",
+   "C": "梁柱式",
+   "D": "攒尖式"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s324",
+  "type": "single",
+  "q": "图中步石排列的形式为（ ）。",
+  "options": {
+   "A": "双连排列",
+   "B": "三连排列",
+   "C": "交错排列",
+   "D": "雁行排列"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s325",
+  "type": "single",
+  "q": "园路设计中，通车园路的坡度应小于（ ）。",
+  "options": {
+   "A": "3%",
+   "B": "5%",
+   "C": "8%",
+   "D": "10%"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s326",
+  "type": "single",
+  "q": "在对碎石垫层碾压时使用（ ）进行，碾压时做到无漏压、无死角并保证碾压均匀。",
+  "options": {
+   "A": "锤子",
+   "B": "夯实机",
+   "C": "平板振动器",
+   "D": "抹子"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s327",
+  "type": "single",
+  "q": "在工程现场向箱笼内填充一定规格的，满足一定要求的石料,以形成自透水的、柔性的、生态的防护结构是（ ）。",
+  "options": {
+   "A": "编柳抛石护坡",
+   "B": "铺石护坡",
+   "C": "草皮护坡",
+   "D": "石笼护坡"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s328",
+  "type": "single",
+  "q": "以下花卉耐热性最强的是（ ）。",
+  "options": {
+   "A": "雏菊",
+   "B": "郁金香",
+   "C": "花毛茛",
+   "D": "一串红"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s329",
+  "type": "single",
+  "q": "一般室内观叶植物适合（ ）环境。",
+  "options": {
+   "A": "半阴",
+   "B": "充足光照",
+   "C": "都可以",
+   "D": "长时间强光照"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s330",
+  "type": "single",
+  "q": "灌溉水的PH值在（ ）间最理想。",
+  "options": {
+   "A": "5-8.5",
+   "B": "5-7",
+   "C": "5-6",
+   "D": "6-8"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s331",
+  "type": "single",
+  "q": "一般促进植物开花的是（ ）。",
+  "options": {
+   "A": "氮肥",
+   "B": "磷肥",
+   "C": "钾肥",
+   "D": "钙肥"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s332",
+  "type": "single",
+  "q": "作物在整个生育期中，有一个时期吸收养分的绝对数量和相对数量都最多，肥料利用率最大，这个时期叫做（ ）。",
+  "options": {
+   "A": "作物营养临界期",
+   "B": "作物营养最大效率期",
+   "C": "作物营养敏感期",
+   "D": "作物营养期"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s333",
+  "type": "single",
+  "q": "室内观叶植物施肥以（ ）肥为主。",
+  "options": {
+   "A": "P",
+   "B": "K",
+   "C": "N",
+   "D": "GA"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s334",
+  "type": "single",
+  "q": "雕刻水仙的开花期主要集中在（ ）。",
+  "options": {
+   "A": "10月",
+   "B": "11月",
+   "C": "2月份",
+   "D": "4月份"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s335",
+  "type": "single",
+  "q": "大花绣球对肥料的需求表现为（ ）。",
+  "options": {
+   "A": "需求少",
+   "B": "需求大",
+   "C": "都可以",
+   "D": "需求较少"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s336",
+  "type": "single",
+  "q": "无花果的保果肥以（ ）肥为主。",
+  "options": {
+   "A": "N",
+   "B": "P",
+   "C": "K",
+   "D": "N、P、K 配合"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s337",
+  "type": "single",
+  "q": "无花果的越冬肥在（ ）时候施。",
+  "options": {
+   "A": "早春",
+   "B": "入冬前",
+   "C": "冬季",
+   "D": "采收期"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s338",
+  "type": "single",
+  "q": "三角梅对肥料的需求是（ ）。",
+  "options": {
+   "A": "越多越好",
+   "B": "充足",
+   "C": "适当控肥",
+   "D": "都可以"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s339",
+  "type": "single",
+  "q": "大丽花生长的温度范围为（ ）。",
+  "options": {
+   "A": "10℃-32℃",
+   "B": "10℃-20℃",
+   "C": "15℃-25℃",
+   "D": "5℃-25℃"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s340",
+  "type": "single",
+  "q": "多肉生长太过密集，长满整个花盆，称为（ ）。",
+  "options": {
+   "A": "老桩",
+   "B": "闷养",
+   "C": "爆盆",
+   "D": "抽花箭"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s341",
+  "type": "single",
+  "q": "观花类植物不能缺（ ）。",
+  "options": {
+   "A": "氮肥",
+   "B": "钾肥",
+   "C": "锌肥",
+   "D": "磷肥"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s342",
+  "type": "single",
+  "q": "月季常见的黑斑病可定期喷（ ）药液防治。",
+  "options": {
+   "A": "代森锌",
+   "B": "粉锈宁",
+   "C": "阿维菌素",
+   "D": "除虫菊酯"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s343",
+  "type": "single",
+  "q": "阴雨天如连续闷棚易引起非洲菊花瓣发生大量斑点，使（ ）爆发。",
+  "options": {
+   "A": "灰霉病",
+   "B": "枯萎病",
+   "C": "炭蛆病",
+   "D": "红蜘蛛"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s344",
+  "type": "single",
+  "q": "台风天成株苗受大风刮伤和雨水冲击，极易引起损伤而引发（ ）。",
+  "options": {
+   "A": "灰霉病",
+   "B": "枯萎病",
+   "C": "炭蛆病",
+   "D": "红蜘蛛"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s345",
+  "type": "single",
+  "q": "棉花立枯病在菌期为害棉苗，造成死苗，是典型的（ ）。",
+  "options": {
+   "A": "虫传病害",
+   "B": "气传病害",
+   "C": "土传病害",
+   "D": "水传病害"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s346",
+  "type": "single",
+  "q": "将植物病害分为单循环病害、多循环病害是根据（ ）。",
+  "options": {
+   "A": "初次浸染的菌量",
+   "B": "再次侵染的菌量",
+   "C": "再次侵染的次数",
+   "D": "病原种类"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s347",
+  "type": "single",
+  "q": "木材中的淀粉含量约为（ ）。",
+  "options": {
+   "A": "2%~6%",
+   "B": "40%~60",
+   "C": "1 5%~6%",
+   "D": "2%~4%"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s348",
+  "type": "single",
+  "q": "药剂在边材的浸透深度只要达到（ ）深就完全可以避免甲虫类蛀害。",
+  "options": {
+   "A": "2~3mm",
+   "B": "3~5mm",
+   "C": "3~4mm",
+   "D": "5~8mm"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s349",
+  "type": "single",
+  "q": "能够对苗木猝倒病病原丝核菌有良好的杀伤效果的药剂是（ ）。",
+  "options": {
+   "A": "波尔多液",
+   "B": "五氯硝基苯",
+   "C": "代森锌",
+   "D": "托布津"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s350",
+  "type": "single",
+  "q": "病毒常引起花叶症状，它是（ ）寄生物。",
+  "options": {
+   "A": "专性寄生",
+   "B": "专性腐生",
+   "C": "兼性寄生",
+   "D": "兼性腐生"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s351",
+  "type": "single",
+  "q": "下列（ ）农药属于负温度系数的农药。",
+  "options": {
+   "A": "有机磷",
+   "B": "氨基甲酸酯",
+   "C": "拟除虫菊酯",
+   "D": "苯氧羧酸"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s352",
+  "type": "single",
+  "q": "害虫（ ）时期对农药敏感。",
+  "options": {
+   "A": "卵期",
+   "B": "幼虫期",
+   "C": "蛹期",
+   "D": "成虫期"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s353",
+  "type": "single",
+  "q": "下列（ ）农药属于杀菌剂。",
+  "options": {
+   "A": "草甘膦",
+   "B": "吡虫啉",
+   "C": "百菌清",
+   "D": "乐果"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s354",
+  "type": "single",
+  "q": "早花大花型铁线莲的重剪一般在（ ）。",
+  "options": {
+   "A": "春秋季",
+   "B": "夏季",
+   "C": "冬季",
+   "D": "花后"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s355",
+  "type": "single",
+  "q": "晚花大花型铁线莲的重剪一般在（ ）。",
+  "options": {
+   "A": "春秋季",
+   "B": "夏季",
+   "C": "冬季",
+   "D": "花后"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s356",
+  "type": "single",
+  "q": "植物造景特性为向上引导视线，突出空间的垂直界面的植物外形为（ ）。",
+  "options": {
+   "A": "垂枝形",
+   "B": "水平展开形",
+   "C": "圆球形",
+   "D": "纺锤形"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s357",
+  "type": "single",
+  "q": "高度为3-4.5米，主要造景应用为塑造垂直空间、屏障视线或作为背景植物使用的植物类型为（ ）。",
+  "options": {
+   "A": "中灌木",
+   "B": "矮小灌木",
+   "C": "高灌木",
+   "D": "小乔木"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s358",
+  "type": "single",
+  "q": "（ ）外形植物是水路边界常用的植物材料，造景特性可将视线引向地面（ ）。",
+  "options": {
+   "A": "垂枝形",
+   "B": "圆球形",
+   "C": "水平展开形",
+   "D": "圆锥形"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s359",
+  "type": "single",
+  "q": "苗木栽植前的修剪应根据各地自然条件，根据《园林绿化工程施工及验收规范》（CJJ82-2012）规定，关于常绿乔木修剪，以下说法正确的是（ ）。",
+  "options": {
+   "A": "常绿阔叶乔木具有轮生侧枝，作行道树时，可剪除基部1 层-2层轮生侧枝",
+   "B": "柏类苗木应定期修剪树形",
+   "C": "修剪松树类苗木枝条时基部应留2cm-3cm木橛",
+   "D": "常绿阔叶乔木枝叶集生树干顶部的苗木可不修剪"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s360",
+  "type": "single",
+  "q": "行道树种植的苗木根系形态要求是（ ）。",
+  "options": {
+   "A": "根系完整，侧根保留",
+   "B": "根系减少，主根截断",
+   "C": "主根截断，侧根减少",
+   "D": "主根不剪，侧根减少"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s361",
+  "type": "single",
+  "q": "根据《公园设计规范》 （GB51192-2016） ，古树名木单株树应同时满足树冠垂直投影以外（ ）m宽和距树干基部外缘水平距离胸径（ ）倍以内。",
+  "options": {
+   "A": "3，10",
+   "B": "5，10",
+   "C": "3，20",
+   "D": "5，20"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s362",
+  "type": "single",
+  "q": "树龄100年的树木，为（ ）级古树。",
+  "options": {
+   "A": "一",
+   "B": "二",
+   "C": "三",
+   "D": "四"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s363",
+  "type": "single",
+  "q": "三级保护的古树保护范围不小于树冠垂直投影外（ ）米。",
+  "options": {
+   "A": "2",
+   "B": "3",
+   "C": "5",
+   "D": "8"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s364",
+  "type": "single",
+  "q": "一般1、2年生的铁线莲用（ ）高的竹竿绑缚比较合适。",
+  "options": {
+   "A": "2m",
+   "B": "1m",
+   "C": "60cm",
+   "D": "都可以"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s365",
+  "type": "single",
+  "q": "根据起掘和包扎方式不同分为土球挖掘、木箱挖掘、裸根挖掘三种不同的挖掘包扎方法，以下不适合裸根挖掘的树种为（ ）。",
+  "options": {
+   "A": "国槐",
+   "B": "刺槐",
+   "C": "火炬树",
+   "D": "罗汉松"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s366",
+  "type": "single",
+  "q": "以下在低温下花芽分化的有（ ）。",
+  "options": {
+   "A": "八仙花",
+   "B": "三角梅",
+   "C": "郁金香",
+   "D": "金盏菊"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s367",
+  "type": "single",
+  "q": "下列能从叶缘长出小植株分离后用于繁殖的是（ ）。",
+  "options": {
+   "A": "黑法师",
+   "B": "落地生根",
+   "C": "玉露",
+   "D": "小球玫瑰"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s368",
+  "type": "single",
+  "q": "郁金香是（ ）科球根花卉。",
+  "options": {
+   "A": "百合科",
+   "B": "石蒜科",
+   "C": "鸢尾科",
+   "D": "天南星科"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s369",
+  "type": "single",
+  "q": "风信子是（ ）科球根花卉。",
+  "options": {
+   "A": "百合科",
+   "B": "石蒜科",
+   "C": "鸢尾科",
+   "D": "天南星科"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s370",
+  "type": "single",
+  "q": "百合是（ ）科植物。",
+  "options": {
+   "A": "报春花科",
+   "B": "石蒜科",
+   "C": "百合科",
+   "D": "天南星科"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s371",
+  "type": "single",
+  "q": "唐菖蒲是（ ）植物。",
+  "options": {
+   "A": "短日照",
+   "B": "日中性",
+   "C": "长日照",
+   "D": "中日照"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s372",
+  "type": "single",
+  "q": "使用花岗岩、大理石、拼花木板和塑料地板做园林铺装时，相邻两块块料面层的高低允许偏差在（ ）mm以内。",
+  "options": {
+   "A": "2.5mm",
+   "B": "1.5mm",
+   "C": "1mm",
+   "D": "0.5mm"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s373",
+  "type": "single",
+  "q": "湿帘降温系统中的湿帘一般安装在温室（ ）墙上。",
+  "options": {
+   "A": "东",
+   "B": "南",
+   "C": "西",
+   "D": "北"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s374",
+  "type": "single",
+  "q": "三角梅的控水一般在（ ）。",
+  "options": {
+   "A": "3-4月",
+   "B": "5-6月",
+   "C": "6-7 月",
+   "D": "8-9 月"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s375",
+  "type": "single",
+  "q": "以下切花在华东地区栽培可以露地越冬的有（ ）。",
+  "options": {
+   "A": "切花月季",
+   "B": "切花非洲菊",
+   "C": "切花马蹄莲",
+   "D": "切花天堂鸟"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s376",
+  "type": "single",
+  "q": "以下哪项不是三角梅常见的虫害（ ）。",
+  "options": {
+   "A": "叶甲",
+   "B": "蚜虫",
+   "C": "蚧壳虫",
+   "D": "红蜘蛛"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s377",
+  "type": "single",
+  "q": "蓝莓开花期在（ ）。",
+  "options": {
+   "A": "春",
+   "B": "夏",
+   "C": "秋",
+   "D": "冬"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s378",
+  "type": "single",
+  "q": "京九红忍冬是（ ）科植物。",
+  "options": {
+   "A": "豆科",
+   "B": "忍冬科",
+   "C": "木犀科",
+   "D": "夹竹桃科"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s379",
+  "type": "single",
+  "q": "土壤过酸或过碱时，应该采取哪些措施来调整土壤的酸碱度（ ）。",
+  "options": {
+   "A": "增施有机肥",
+   "B": "施用碱性或酸性肥料",
+   "C": "增加灌溉次数",
+   "D": "减少田间积水"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s380",
+  "type": "single",
+  "q": "（ ）为现场常备机具，体形小，轻便。适用，操作简单，但损实深度有限。适于小面积粘性土薄层回填上振实。",
+  "options": {
+   "A": "平板式振动器",
+   "B": "小型打夯机",
+   "C": "羊足压路碌",
+   "D": "压路机"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s381",
+  "type": "single",
+  "q": "不属于花坛常用砌合方法是（ ）。",
+  "options": {
+   "A": "一顺一丁",
+   "B": "四顺一丁",
+   "C": "梅花丁",
+   "D": "条砌法"
+  },
+  "a": ""
+ },
+ {
+  "id": "s382",
+  "type": "single",
+  "q": "（ ）的特点是整体性好，但墙体交接处砍砖较多。",
+  "options": {
+   "A": "一顺一丁",
+   "B": "三顺一丁",
+   "C": "梅花丁",
+   "D": "条砌法"
+  },
+  "a": ""
+ },
+ {
+  "id": "s383",
+  "type": "single",
+  "q": "草坪灯高度应限制在（ ）。",
+  "options": {
+   "A": "0.5m以下",
+   "B": "0.7m以下",
+   "C": "1m以下",
+   "D": "1.2m以下"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s384",
+  "type": "single",
+  "q": "绿化栽植或播种前应对该地区的土壤理化性质进行化验分析，采取相应的土壤改良、施肥和置换客土等措施。根据《园林绿化工程施工及验收规范》 （CJJ82-2012）规定，草坪栽植土壤有效土层厚度应大于（ ）cm。",
+  "options": {
+   "A": "20cm",
+   "B": "25cm",
+   "C": "30cm",
+   "D": "35cm"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s385",
+  "type": "single",
+  "q": "下列（ ）组花卉最适合南方炎热的夏季花坛布置。",
+  "options": {
+   "A": "雏菊、金盏菊、金鱼草、藿香蓟",
+   "B": "雏菊、金盏菊、三色堇、桂竹香",
+   "C": "矮牵牛、三色堇、香雪球、藿香蓟",
+   "D": "太阳花、鸡冠花、千日红、彩叶草"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s386",
+  "type": "single",
+  "q": "法国香水（金钩吻）是（ ）科植物。",
+  "options": {
+   "A": "豆科",
+   "B": "忍冬科",
+   "C": "木犀科",
+   "D": "夹竹桃科"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s387",
+  "type": "single",
+  "q": "常春油麻藤是（ ）性木质藤本。",
+  "options": {
+   "A": "缠绕性",
+   "B": "吸附性",
+   "C": "匍匐性",
+   "D": "无自主攀爬能力"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s388",
+  "type": "single",
+  "q": "中国水仙的自然花期一般在（ ）。",
+  "options": {
+   "A": "1-2月份",
+   "B": "3-4月份",
+   "C": "5-6月份",
+   "D": "7-8月份"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s389",
+  "type": "single",
+  "q": "姬胧月目前最常见的繁殖方法是（ ）。",
+  "options": {
+   "A": "叶插",
+   "B": "分株",
+   "C": "播种",
+   "D": "砍头"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s390",
+  "type": "single",
+  "q": "园林中的花坛、挡土墙等砌体所用的砖须经受雨水、地下水等侵蚀，故采用（ ）等。",
+  "options": {
+   "A": "灰砂砖",
+   "B": "黏土烧结实心砖",
+   "C": "加气砖",
+   "D": "粉煤灰砖"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s391",
+  "type": "single",
+  "q": "除悬崖外， （ ）不能相交，也不能重叠，而悬崖、峭壁则用特殊符号表示。",
+  "options": {
+   "A": "零点线",
+   "B": "调配线",
+   "C": "填挖线",
+   "D": "等高线"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s392",
+  "type": "single",
+  "q": "铺石护坡应有足够的（ ）以减少土壤从护坡上面流失，还需在块石下面设倒滤层垫底。",
+  "options": {
+   "A": "保水性",
+   "B": "坚固性",
+   "C": "透水性",
+   "D": "抗压性"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s393",
+  "type": "single",
+  "q": "月季冬季修剪后涂抹（ ）预防病虫害的效果比较好。",
+  "options": {
+   "A": "代森锌",
+   "B": "石硫合剂",
+   "C": "阿维菌素",
+   "D": "苯醚甲环唑"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s394",
+  "type": "single",
+  "q": "什么主要发生在西北地区，特别是新疆、甘肃一带发生较重（ ）。",
+  "options": {
+   "A": "山楂叶螨",
+   "B": "苹果全爪螨",
+   "C": "李始叶螨",
+   "D": "二斑叶螨"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s395",
+  "type": "single",
+  "q": "栗瘿蚊危害板栗、锥栗的幼芽，使受害芽（ ）时形成瘤状虫瘿，影响新梢和开花结实。",
+  "options": {
+   "A": "春季",
+   "B": "夏季",
+   "C": "秋季",
+   "D": "冬季"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s396",
+  "type": "single",
+  "q": "云杉锈病的病原菌冬孢子一般在6 月中旬萌发，产生担子和担孢子，而担孢子主要通过（ ）传播到云杉幼嫩针叶上侵染。",
+  "options": {
+   "A": "温度",
+   "B": "湿度",
+   "C": "气流",
+   "D": "雨"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s397",
+  "type": "single",
+  "q": "苹果锈病的病原菌的转主寄主是（ ）。",
+  "options": {
+   "A": "十大功劳",
+   "B": "桉树",
+   "C": "桧柏",
+   "D": "梨树"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s398",
+  "type": "single",
+  "q": "下列植物中不适合作盆景材料的是（ ）。",
+  "options": {
+   "A": "槭树",
+   "B": "泡桐",
+   "C": "日本五针松",
+   "D": "红檵木"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s399",
+  "type": "single",
+  "q": "道路绿化树木的树形多种多样，下列哪一树种的树冠是浑圆对称（ ）。",
+  "options": {
+   "A": "桂花",
+   "B": "香泡",
+   "C": "榉树",
+   "D": "杜英"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s400",
+  "type": "single",
+  "q": "根据《公园设计规范》 （GB51192-2016） ，古树名木成林地带保护范围的划定为外缘树树冠垂直投影以外（ ）所围合的范围。",
+  "options": {
+   "A": "3m",
+   "B": "5m",
+   "C": "8m",
+   "D": "10m"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s401",
+  "type": "single",
+  "q": "下列保水性最好的介质是（ ）。",
+  "options": {
+   "A": "泥炭",
+   "B": "珍珠岩",
+   "C": "陶粒",
+   "D": "树皮"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s402",
+  "type": "single",
+  "q": "下列最适合做排水层的是（ ）。",
+  "options": {
+   "A": "陶粒",
+   "B": "泥炭",
+   "C": "珍珠岩",
+   "D": "蛭石"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s403",
+  "type": "single",
+  "q": "下列最适合大部分植物生长的土壤是（ ）。",
+  "options": {
+   "A": "沙土",
+   "B": "黏土",
+   "C": "黄泥土",
+   "D": "壤土"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s404",
+  "type": "single",
+  "q": "平畦的特点（ ）。",
+  "options": {
+   "A": "土地利用率高",
+   "B": "保水性强",
+   "C": "土壤蒸发量大",
+   "D": "用工少"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s405",
+  "type": "single",
+  "q": "不能用做覆盖材料的是（ ）。",
+  "options": {
+   "A": "秸秆",
+   "B": "沙",
+   "C": "普通地膜",
+   "D": "细土"
+  },
+  "a": "D"
+ },
+ {
+  "id": "s406",
+  "type": "single",
+  "q": "最好的扦插枝条为（ ）。",
+  "options": {
+   "A": "健壮充实的枝条",
+   "B": "阴生枝",
+   "C": "老枝",
+   "D": "病枝"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s407",
+  "type": "single",
+  "q": "除了多肉植物，剪穗过程中最重要的是（ ）。",
+  "options": {
+   "A": "消毒",
+   "B": "保湿",
+   "C": "修剪",
+   "D": "低温"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s408",
+  "type": "single",
+  "q": "对一些花叶品种的观叶植物出现返祖现象时，应该及时（ ）。",
+  "options": {
+   "A": "去异",
+   "B": "摘心",
+   "C": "换盆",
+   "D": "整形"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s409",
+  "type": "single",
+  "q": "月季盆栽用土偏（ ）性。",
+  "options": {
+   "A": "酸",
+   "B": "碱",
+   "C": "中",
+   "D": "都可以"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s410",
+  "type": "single",
+  "q": "以下种植最浅的是（ ）。",
+  "options": {
+   "A": "风信子",
+   "B": "番红花",
+   "C": "郁金香",
+   "D": "洋水仙"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s411",
+  "type": "single",
+  "q": "下列（ ）剂型的农药不宜喷雾使用。",
+  "options": {
+   "A": "粉剂",
+   "B": "可湿性粉剂",
+   "C": "乳油",
+   "D": "悬浮剂"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s412",
+  "type": "single",
+  "q": "下列（ ）组花卉为春播秋花类（又称一年生花卉） 。",
+  "options": {
+   "A": "鸡冠花、凤仙花、百日草、太阳花",
+   "B": "金鱼草、雏菊、金盏菊、三色堇",
+   "C": "百日草、太阳花、金盏菊、三色堇",
+   "D": "鸡冠花、凤仙花、金鱼草、雏菊"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s413",
+  "type": "single",
+  "q": "月季早春抽芽时追施（ ）肥料。",
+  "options": {
+   "A": "高氮肥和平衡肥交替使用",
+   "B": "开花肥",
+   "C": "高钾肥",
+   "D": "高磷肥"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s414",
+  "type": "single",
+  "q": "观赏花对肥料的要求错误的是（ ）。",
+  "options": {
+   "A": "无污染",
+   "B": "无毒",
+   "C": "速效",
+   "D": "无臭"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s415",
+  "type": "single",
+  "q": "在高温多雨的或沙质土壤上追肥要采用什么原则（ ）。",
+  "options": {
+   "A": "少次多量",
+   "B": "少量多次",
+   "C": "多施氮肥",
+   "D": "多施有机肥"
+  },
+  "a": "B"
+ },
+ {
+  "id": "s416",
+  "type": "single",
+  "q": "下列说法错误的是（ ）。",
+  "options": {
+   "A": "木本植物灌水时间间隔要稍长",
+   "B": "一两年生花卉灌水时间间隔要稍短",
+   "C": "宿根花卉灌水时间间隔要短",
+   "D": "球根花卉灌水时间间隔要稍长"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s417",
+  "type": "single",
+  "q": "以下最不容易感染枯萎病的铁线莲是（ ）。",
+  "options": {
+   "A": "早花大花型",
+   "B": "晚花大花型",
+   "C": "意大利型",
+   "D": "弗罗里达型"
+  },
+  "a": "C"
+ },
+ {
+  "id": "s418",
+  "type": "single",
+  "q": "引起杨树花叶病的病毒具有耐高温的特性，致死温度在（ ）℃。",
+  "options": {
+   "A": "75~80",
+   "B": "75~85",
+   "C": "70~80",
+   "D": "70~75"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s419",
+  "type": "single",
+  "q": "下列（ ）农药属于杀虫剂。",
+  "options": {
+   "A": "乐果",
+   "B": "大隆",
+   "C": "百菌清",
+   "D": "2 4-滴"
+  },
+  "a": "A"
+ },
+ {
+  "id": "s420",
+  "type": "single",
+  "q": "关于冬剪和夏剪说法正确的是（ ）。",
+  "options": {
+   "A": "夏季修剪，没有冬季修剪准确",
+   "B": "冬季修剪的营养损失较夏季少",
+   "C": "冬剪，容易造成修剪枝梢部分冻伤",
+   "D": "冬季修剪后，夏季可不修剪"
+  },
+  "a": "B"
+ },
+ {
+  "id": "m1",
+  "type": "multiple",
+  "q": "下列属于颗粒性基质的有（ ）。",
+  "options": {
+   "A": "泥炭",
+   "B": "珍珠岩",
+   "C": "腐殖土",
+   "D": "赤玉土"
+  },
+  "a": "BD"
+ },
+ {
+  "id": "m2",
+  "type": "multiple",
+  "q": "基质常用的消毒方法有（ ）。",
+  "options": {
+   "A": "蒸汽消毒",
+   "B": "太阳能消毒",
+   "C": "水洗法消毒",
+   "D": "化学药剂消毒"
+  },
+  "a": "ABD"
+ },
+ {
+  "id": "m3",
+  "type": "multiple",
+  "q": "以下是冲击式夯土机的有（ ）。",
+  "options": {
+   "A": "内燃式夯土机",
+   "B": "振动式夯土机",
+   "C": "蛙式夯土机",
+   "D": "羊足碾"
+  },
+  "a": "ABC"
+ },
+ {
+  "id": "m4",
+  "type": "multiple",
+  "q": "计算土方体积的方法主要有（ ）。",
+  "options": {
+   "A": "求体积公式法",
+   "B": "数学分析法",
+   "C": "断面法",
+   "D": "方格网法"
+  },
+  "a": "ACD"
+ },
+ {
+  "id": "m5",
+  "type": "multiple",
+  "q": "下列属于球根花卉的有( )。",
+  "options": {
+   "A": "郁金香",
+   "B": "紫罗兰",
+   "C": "百合",
+   "D": "萱草"
+  },
+  "a": "AC"
+ },
+ {
+  "id": "m6",
+  "type": "multiple",
+  "q": "华东地区露地花卉播种的时间一般在（ ）。",
+  "options": {
+   "A": "春",
+   "B": "夏",
+   "C": "秋",
+   "D": "冬"
+  },
+  "a": "AC"
+ },
+ {
+  "id": "m7",
+  "type": "multiple",
+  "q": "属于自根繁殖的是（ ）。",
+  "options": {
+   "A": "分株",
+   "B": "扦插",
+   "C": "嫁接",
+   "D": "压条"
+  },
+  "a": "ABD"
+ },
+ {
+  "id": "m8",
+  "type": "multiple",
+  "q": "下列属于秋播花卉的有（ ）。",
+  "options": {
+   "A": "三色堇",
+   "B": "金盏菊",
+   "C": "一串红",
+   "D": "紫罗兰"
+  },
+  "a": "ABD"
+ },
+ {
+  "id": "m9",
+  "type": "multiple",
+  "q": "以下花卉耐热不耐寒的有（ ）",
+  "options": {
+   "A": "一串红",
+   "B": "鸡冠花",
+   "C": "孔雀草",
+   "D": "羽衣甘蓝"
+  },
+  "a": "ABC"
+ },
+ {
+  "id": "m10",
+  "type": "multiple",
+  "q": "唐菖蒲的越冬温度要求（ ）以上，球茎萌芽温度要求（ ）以上。",
+  "options": {
+   "A": "0℃",
+   "B": "5℃",
+   "C": "10℃",
+   "D": "15℃"
+  },
+  "a": "AB"
+ },
+ {
+  "id": "m11",
+  "type": "multiple",
+  "q": "施工总图包括以下哪几个（ ）",
+  "options": {
+   "A": "施工总平面图",
+   "B": "绿化种植总平面布置图",
+   "C": "地形图",
+   "D": "各分区块绿化种植详图"
+  },
+  "a": "AB"
+ },
+ {
+  "id": "m12",
+  "type": "multiple",
+  "q": "下列适合种植大花绣球的场所有（ ）。",
+  "options": {
+   "A": "室内",
+   "B": "封闭阳台",
+   "C": "大树下",
+   "D": "墙角"
+  },
+  "a": "CD"
+ },
+ {
+  "id": "m13",
+  "type": "multiple",
+  "q": "以下需要对铁线莲进行追肥的时期有（ ）。",
+  "options": {
+   "A": "2 月",
+   "B": "4月",
+   "C": "5月",
+   "D": "8、9月"
+  },
+  "a": "BD"
+ },
+ {
+  "id": "m14",
+  "type": "multiple",
+  "q": "以下多肉在华东地区能露地越冬的是（ ）。",
+  "options": {
+   "A": "薄雪万年草",
+   "B": "垂盆草",
+   "C": "佛甲草",
+   "D": "八宝景天"
+  },
+  "a": "ABCD"
+ },
+ {
+  "id": "m15",
+  "type": "multiple",
+  "q": "当温度低于15℃时，切花百合可能出现（ ）状况。",
+  "options": {
+   "A": "落蕾",
+   "B": "黄叶",
+   "C": "裂苞",
+   "D": "烂叶"
+  },
+  "a": "ABC"
+ },
+ {
+  "id": "m16",
+  "type": "multiple",
+  "q": "月季常见病害有（ ）。",
+  "options": {
+   "A": "黑斑病",
+   "B": "白粉病",
+   "C": "黑腐病",
+   "D": "枯萎病"
+  },
+  "a": "AB"
+ },
+ {
+  "id": "m17",
+  "type": "multiple",
+  "q": "多肉植物常见的虫害有（ ）。",
+  "options": {
+   "A": "蚜虫",
+   "B": "粉蚧",
+   "C": "蛾类幼虫",
+   "D": "天牛"
+  },
+  "a": "ABC"
+ },
+ {
+  "id": "m18",
+  "type": "multiple",
+  "q": "对观叶植物的修建整形有（ ）。",
+  "options": {
+   "A": "剪枝",
+   "B": "摘心",
+   "C": "除芽",
+   "D": "摘叶"
+  },
+  "a": "ABCD"
+ },
+ {
+  "id": "m19",
+  "type": "multiple",
+  "q": "滨水植物造景中，形状、形态在空间上的协调变化很重要，形式有（ ）。",
+  "options": {
+   "A": "自然型",
+   "B": "飘逸型",
+   "C": "下垂型",
+   "D": "流线型"
+  },
+  "a": "ABCD"
+ },
+ {
+  "id": "m20",
+  "type": "multiple",
+  "q": "以下经常被用于屋顶绿化，做地被的有（ ）。",
+  "options": {
+   "A": "垂盆草",
+   "B": "佛甲草",
+   "C": "薄雪万年草",
+   "D": "玉露"
+  },
+  "a": "ABC"
+ },
+ {
+  "id": "m21",
+  "type": "multiple",
+  "q": "较好的栽培基质一般具有（ ）特点。",
+  "options": {
+   "A": "疏松透气",
+   "B": "保水保肥",
+   "C": "无污染",
+   "D": "无病虫害"
+  },
+  "a": "ABCD"
+ },
+ {
+  "id": "m22",
+  "type": "multiple",
+  "q": "以下适合做排水层的有（ ）。",
+  "options": {
+   "A": "陶粒",
+   "B": "碎石",
+   "C": "蛭石",
+   "D": "泥炭"
+  },
+  "a": "AB"
+ },
+ {
+  "id": "m23",
+  "type": "multiple",
+  "q": "园林中常用的土方机械有（ ）。",
+  "options": {
+   "A": "推土机",
+   "B": "卷扬机",
+   "C": "平地机",
+   "D": "铲运机"
+  },
+  "a": "ACD"
+ },
+ {
+  "id": "m24",
+  "type": "multiple",
+  "q": "温度的三基点包括（ ）。",
+  "options": {
+   "A": "最适温",
+   "B": "最低温",
+   "C": "最高温",
+   "D": "较高温"
+  },
+  "a": "ABC"
+ },
+ {
+  "id": "m25",
+  "type": "multiple",
+  "q": "以下在高温下花芽分化的有（ ）。",
+  "options": {
+   "A": "三角梅",
+   "B": "梅花",
+   "C": "郁金香",
+   "D": "金盏菊"
+  },
+  "a": "ABC"
+ },
+ {
+  "id": "m26",
+  "type": "multiple",
+  "q": "下列最适栽培水深在5~10cm的水湿生植物为（ ）。",
+  "options": {
+   "A": "荷花",
+   "B": "香蒲",
+   "C": "菖蒲",
+   "D": "水葱"
+  },
+  "a": "CD"
+ },
+ {
+  "id": "m27",
+  "type": "multiple",
+  "q": "扦插根据取材不同，分为（ ）。",
+  "options": {
+   "A": "枝插",
+   "B": "叶插",
+   "C": "根插",
+   "D": "半叶插"
+  },
+  "a": "ABC"
+ },
+ {
+  "id": "m28",
+  "type": "multiple",
+  "q": "在进行月季品种的筛选时，以下（ ）因素都要考虑。",
+  "options": {
+   "A": "重复开花性",
+   "B": "抗病性",
+   "C": "株型大小",
+   "D": "耐热性"
+  },
+  "a": "ABCD"
+ },
+ {
+  "id": "m29",
+  "type": "multiple",
+  "q": "三角梅花后需要修剪的枝条有（ ）。",
+  "options": {
+   "A": "残花",
+   "B": "过密枝",
+   "C": "徒长枝",
+   "D": "弱势枝"
+  },
+  "a": "ABCD"
+ },
+ {
+  "id": "m30",
+  "type": "multiple",
+  "q": "常见的秋植球根有（ ）。",
+  "options": {
+   "A": "朱顶红",
+   "B": "郁金香",
+   "C": "马蹄莲",
+   "D": "洋水仙"
+  },
+  "a": "BD"
+ },
+ {
+  "id": "m31",
+  "type": "multiple",
+  "q": "在短日照季节里（冬季） ，要使长日照花卉提前开花，或使短日照花卉延迟开花。一般采用（ ）措施。",
+  "options": {
+   "A": "延长光照法",
+   "B": "中断暗期法",
+   "C": "遮光法",
+   "D": "摘心法"
+  },
+  "a": "AB"
+ },
+ {
+  "id": "m32",
+  "type": "multiple",
+  "q": "以下是可以用作给水景加压的设备有（ ）。",
+  "options": {
+   "A": "管道泵",
+   "B": "离心泵",
+   "C": "污水泵",
+   "D": "喷灌机"
+  },
+  "a": "AB"
+ },
+ {
+  "id": "m33",
+  "type": "multiple",
+  "q": "生态化工程技术措施包括（ ）。",
+  "options": {
+   "A": "地表水滞蓄",
+   "B": "硬质驳岸",
+   "C": "模拟地带性群落",
+   "D": "透水铺装"
+  },
+  "a": "ACD"
+ },
+ {
+  "id": "m34",
+  "type": "multiple",
+  "q": "常见的短日照花卉有（） 。",
+  "options": {
+   "A": "秋菊",
+   "B": "八仙花",
+   "C": "蟹爪兰",
+   "D": "一品红"
+  },
+  "a": "ACD"
+ },
+ {
+  "id": "m35",
+  "type": "multiple",
+  "q": "温度对花卉的以下（ ）都有很大影响。",
+  "options": {
+   "A": "休眠",
+   "B": "发芽",
+   "C": "花芽分化",
+   "D": "开花或花色"
+  },
+  "a": "ABCD"
+ },
+ {
+  "id": "m36",
+  "type": "multiple",
+  "q": "内遮阳保温幕的作用有（ ）。",
+  "options": {
+   "A": "保温节能",
+   "B": "遮阳降温",
+   "C": "防水滴",
+   "D": "节约灌溉用水"
+  },
+  "a": "AC"
+ },
+ {
+  "id": "m37",
+  "type": "multiple",
+  "q": "僵果病的表现症状为（ ）突然萎蔫，变褐。",
+  "options": {
+   "A": "新叶、芽",
+   "B": "茎秆",
+   "C": "花序",
+   "D": "果实"
+  },
+  "a": "ACD"
+ },
+ {
+  "id": "m38",
+  "type": "multiple",
+  "q": "多肉植物常见的病害有（ ）。",
+  "options": {
+   "A": "灰霉病",
+   "B": "黑腐病",
+   "C": "炭疽病",
+   "D": "叶斑病"
+  },
+  "a": "AB"
+ },
+ {
+  "id": "m39",
+  "type": "multiple",
+  "q": "古树名木生长势应根据古树名木诊断结果进行分级，生长势可分为（ ）。",
+  "options": {
+   "A": "正常",
+   "B": "轻弱",
+   "C": "中弱",
+   "D": "重弱"
+  },
+  "a": "ABD"
+ },
+ {
+  "id": "m40",
+  "type": "multiple",
+  "q": "以下在铁线莲牵引绑缚中需注意的操作有（ ）。",
+  "options": {
+   "A": "支撑材料的高度",
+   "B": "支撑材料的粗度",
+   "C": "牵引中尽量小心不要弄伤枝条",
+   "D": "攀爬能力很强"
+  },
+  "a": "ABC"
+ },
+ {
+  "id": "m41",
+  "type": "multiple",
+  "q": "下列（ ）介质适合附生性兰花。",
+  "options": {
+   "A": "树皮",
+   "B": "水苔",
+   "C": "园土",
+   "D": "泥炭"
+  },
+  "a": "AB"
+ },
+ {
+  "id": "m42",
+  "type": "multiple",
+  "q": "低畦的特点（ ）。",
+  "options": {
+   "A": "肥料流失少",
+   "B": "低温稳定",
+   "C": "土壤不易干燥",
+   "D": "便于机械操作"
+  },
+  "a": "ABC"
+ },
+ {
+  "id": "m43",
+  "type": "multiple",
+  "q": "以下不适合水培水仙的季节有（ ）。",
+  "options": {
+   "A": "9 月",
+   "B": "10月",
+   "C": "12月",
+   "D": "2月"
+  },
+  "a": "AB"
+ },
+ {
+  "id": "m44",
+  "type": "multiple",
+  "q": "根据球根花卉的种植时间，球根花卉分为（ ）。",
+  "options": {
+   "A": "块茎类球根",
+   "B": "春植球根",
+   "C": "秋植球根",
+   "D": "球茎类球根"
+  },
+  "a": "BC"
+ },
+ {
+  "id": "m45",
+  "type": "multiple",
+  "q": "三角梅扦插最适合的季节是（ ）。",
+  "options": {
+   "A": "3-4月",
+   "B": "4-5月",
+   "C": "5-6 月",
+   "D": "7-8 月"
+  },
+  "a": "ABC"
+ },
+ {
+  "id": "m46",
+  "type": "multiple",
+  "q": "黄丽最常用的繁殖（ ）。",
+  "options": {
+   "A": "枝插",
+   "B": "分株",
+   "C": "叶插",
+   "D": "砍头"
+  },
+  "a": "AC"
+ },
+ {
+  "id": "m47",
+  "type": "multiple",
+  "q": "香石竹作为重要的切花栽培，其生长环境宜（ ）条件。",
+  "options": {
+   "A": "性喜有良好光照和通风的环境",
+   "B": "类似上海的夏季高温多雨的气候",
+   "C": "排水良好的土壤",
+   "D": "需用几层金属网、绳索组成网络来支撑花枝"
+  },
+  "a": "ACD"
+ },
+ {
+  "id": "m48",
+  "type": "multiple",
+  "q": "非洲菊生长期要注意（ ）等植株管理措施。",
+  "options": {
+   "A": "剥叶",
+   "B": "摘心",
+   "C": "疏蕾",
+   "D": "抹芽"
+  },
+  "a": "AC"
+ },
+ {
+  "id": "m49",
+  "type": "multiple",
+  "q": "属于自根繁殖的是（ ）。",
+  "options": {
+   "A": "分株",
+   "B": "扦插",
+   "C": "嫁接",
+   "D": "压条"
+  },
+  "a": "ABD"
+ },
+ {
+  "id": "m50",
+  "type": "multiple",
+  "q": "居住区活动广场的铺地宜选择（ ）。",
+  "options": {
+   "A": "料石",
+   "B": "抛光花岗岩",
+   "C": "渗水砖",
+   "D": "玻璃地砖"
+  },
+  "a": "AC"
+ },
+ {
+  "id": "m51",
+  "type": "multiple",
+  "q": "铺砌时应轻拿轻放，用（ ）轻敲压平，以免损坏人园路连锁砖的边角。",
+  "options": {
+   "A": "木锤",
+   "B": "橡胶锤",
+   "C": "抹子",
+   "D": "水平尺"
+  },
+  "a": "AB"
+ },
+ {
+  "id": "m52",
+  "type": "multiple",
+  "q": "月季在以下哪几个时期需要追肥（ ）。",
+  "options": {
+   "A": "入冬前",
+   "B": "盛花期",
+   "C": "花后",
+   "D": "冬季"
+  },
+  "a": "ABC"
+ },
+ {
+  "id": "m53",
+  "type": "multiple",
+  "q": "以下属于N素过量的表现有（ ）。",
+  "options": {
+   "A": "开花延迟",
+   "B": "株小",
+   "C": "黄化",
+   "D": "徒长"
+  },
+  "a": "AD"
+ },
+ {
+  "id": "m54",
+  "type": "multiple",
+  "q": "朱顶红对温度的需求表现为（ ）。",
+  "options": {
+   "A": "喜温暖",
+   "B": "冷凉",
+   "C": "忌酷热",
+   "D": "耐酷热"
+  },
+  "a": "AC"
+ },
+ {
+  "id": "m55",
+  "type": "multiple",
+  "q": "以下切花在华东地区栽培可以露地越冬的有（ ）。",
+  "options": {
+   "A": "切花月季",
+   "B": "切花非洲菊",
+   "C": "切花菊花",
+   "D": "切花天堂鸟"
+  },
+  "a": "AC"
+ },
+ {
+  "id": "m56",
+  "type": "multiple",
+  "q": "生石花喜欢（ ）环境。",
+  "options": {
+   "A": "温暖干燥",
+   "B": "日照充足",
+   "C": "通风良好",
+   "D": "温暖半阴"
+  },
+  "a": "ABC"
+ },
+ {
+  "id": "m57",
+  "type": "multiple",
+  "q": "大花绣球常见病害有（ ）。",
+  "options": {
+   "A": "白粉病",
+   "B": "叶斑病",
+   "C": "黑腐病",
+   "D": "枯萎病"
+  },
+  "a": "AB"
+ },
+ {
+  "id": "m58",
+  "type": "multiple",
+  "q": "下列属于寄生性天敌昆虫的是（ ）",
+  "options": {
+   "A": "寄生蜂",
+   "B": "赤眼蜂",
+   "C": "蜜蜂",
+   "D": "蚜虫蜂"
+  },
+  "a": "ABD"
+ },
+ {
+  "id": "m59",
+  "type": "multiple",
+  "q": "行道树应选择（ ）的树种。",
+  "options": {
+   "A": "分支点高",
+   "B": "耐修剪",
+   "C": "四季有景",
+   "D": "花、果对行人不会造成危害"
+  },
+  "a": "ABD"
+ },
+ {
+  "id": "m60",
+  "type": "multiple",
+  "q": "古树名木应以养护为主，复壮应在养护的基础上进行，存在安全隐患的古树名木应进行复壮，复壮技术包括（ ）。",
+  "options": {
+   "A": "土壤改良",
+   "B": "树体损伤处理",
+   "C": "树洞修补",
+   "D": "树体加固"
+  },
+  "a": "ABCD"
+ },
+ {
+  "id": "j1",
+  "type": "judge",
+  "q": "蔓长春花植株丛生，茎细长，匍匐生长，能快速覆盖地面，大面积栽培具有地被效果。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j2",
+  "type": "judge",
+  "q": "蛭石持水能力强，但长期使用，容易致密，影响透气和排水效果，一般不单独使用。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j3",
+  "type": "judge",
+  "q": "秋天播种、幼苗越冬、翌年春夏开花、结实、后枯死，通常表现为耐寒不耐热，喜欢凉爽气候。此类花卉属于宿根花卉。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j4",
+  "type": "judge",
+  "q": "植物的营养生长和生殖生长是相互促进又相互制约的。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j5",
+  "type": "judge",
+  "q": "枝插是使用最广泛的一种扦插方法。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j6",
+  "type": "judge",
+  "q": "介质对扦插成活没有影响。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j7",
+  "type": "judge",
+  "q": "摘心能促发侧枝。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j8",
+  "type": "judge",
+  "q": "根茎和匍匐茎一般长在地下，走茎一般长在地面上。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j9",
+  "type": "judge",
+  "q": "月季是短日照植物。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j10",
+  "type": "judge",
+  "q": "玉簪、紫萼是耐阴性地被，除春观赏花之外，夏秋季节叶片也可观赏尤其是花叶品种。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j11",
+  "type": "judge",
+  "q": "在园林道路中，所有路面根据使用功能有宽窄变化。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j12",
+  "type": "judge",
+  "q": "路堤型和路堑型园路道牙布置方式相同，排水方式不同。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j13",
+  "type": "judge",
+  "q": "．光照不足对植物生长的影响很大，但光照太强一般影响不大。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j14",
+  "type": "judge",
+  "q": "光照太强时，阴性植物的叶片常会被灼伤。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j15",
+  "type": "judge",
+  "q": "观叶植物都只要施用N肥。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j16",
+  "type": "judge",
+  "q": "三角梅在华东地区可以露地越冬。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j17",
+  "type": "judge",
+  "q": "铁线莲是肉质根系，怕根部积水。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j18",
+  "type": "judge",
+  "q": "天牛、红蜘蛛、蓟马是无花果的主要害虫。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j19",
+  "type": "judge",
+  "q": "石硫合剂、代森锌均可用于杀菌。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j20",
+  "type": "judge",
+  "q": "行道树悬铃木修剪时间适宜在11月份。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j21",
+  "type": "judge",
+  "q": "陶粒透气性好，但保水性差，一般作为排水层使用。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j22",
+  "type": "judge",
+  "q": "南方地区春播比北方地区晚。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j23",
+  "type": "judge",
+  "q": "园艺上可砍伤根部促其分生根蘖以增加繁殖系数。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j24",
+  "type": "judge",
+  "q": "条播时，黏土要比沙土适当深些。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j25",
+  "type": "judge",
+  "q": "计算过程中土方工程量的汇总时需要有诸如认真仔细、负责、耐心的态度。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j26",
+  "type": "judge",
+  "q": "无花果耐寒性很强，在我国北方也可露地越冬。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j27",
+  "type": "judge",
+  "q": "石竹在华东地区栽培，春播比秋播好。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j28",
+  "type": "judge",
+  "q": "配好的铁线莲介质可用农用消石灰调节PH值。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j29",
+  "type": "judge",
+  "q": "加强植株通风透光可减少僵果病。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j30",
+  "type": "judge",
+  "q": "同种昆虫的同一性别成虫具有2种或更多种不同类型的个体的现象叫性二型现象。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j31",
+  "type": "judge",
+  "q": "蔷薇科的植物可以用敌敌畏防治害虫。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j32",
+  "type": "judge",
+  "q": "早花大花型铁线莲冬季修剪剪至枝条内部呈现绿色部位即可。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j33",
+  "type": "judge",
+  "q": "桂花的树冠修剪可以采用疏剪方式，提高修剪量形成浑圆树冠形态。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j34",
+  "type": "judge",
+  "q": "古树名木保护应考虑人为伤害预防，对根系裸露、枝干易受破坏或者人为活动频繁的地方宜设置围栏。围栏宜设置在树冠垂直投影外延10m以外，围栏高度宜大于1.2m。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j35",
+  "type": "judge",
+  "q": "古树衰老具有多种原因，自然因素是最主要的。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j36",
+  "type": "judge",
+  "q": "用于垂直绿化的藤本植物对土壤要求很严格。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j37",
+  "type": "judge",
+  "q": "爬山虎以幼株攀缘时，生长能力强，能够很快布满墙面和房屋面。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j38",
+  "type": "judge",
+  "q": "廊道绿化不属于立体绿化。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j39",
+  "type": "judge",
+  "q": "垂盆草和佛甲草都是很好的屋顶绿化材料。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j40",
+  "type": "judge",
+  "q": "垂直绿化植物施肥的方法主要是施基肥和追肥。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j41",
+  "type": "judge",
+  "q": "竹子不适宜在盐分含量高的土地上栽植",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j42",
+  "type": "judge",
+  "q": "泥炭呈碱性或微碱性，吸水力强，有机质丰富容易分解。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j43",
+  "type": "judge",
+  "q": "报春花、蝴蝶兰、朱蕉属于直立型材料。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j44",
+  "type": "judge",
+  "q": "藤月很高，灌木月季比较矮。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j45",
+  "type": "judge",
+  "q": "蔷薇一年可多次开花，月季一年只能开一季花。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j46",
+  "type": "judge",
+  "q": "三角梅最常用的繁殖方法是扦插。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j47",
+  "type": "judge",
+  "q": "飘香藤是一个落叶性观花藤本。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j48",
+  "type": "judge",
+  "q": "朱顶红种植时需深埋入土里。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j49",
+  "type": "judge",
+  "q": "郁金香生根期避光。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j50",
+  "type": "judge",
+  "q": "土壤空隙度在20％时根再生力最强。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j51",
+  "type": "judge",
+  "q": "若施工点施工不大，木铺地施工时可以将木材直接排放在土面。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j52",
+  "type": "judge",
+  "q": "如土壤过分干燥，需先洒水湿润后再行压实。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j53",
+  "type": "judge",
+  "q": "大花绣球喜欢温暖气候。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j54",
+  "type": "judge",
+  "q": "越冬温度是室内观叶植物生长的关键，而夏季高温影响不大。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j55",
+  "type": "judge",
+  "q": "灯光诱杀有害昆虫属于物理防治。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j56",
+  "type": "judge",
+  "q": "使用胃毒杀虫剂主要用来防治刺吸式口器害虫。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j57",
+  "type": "judge",
+  "q": "杀红蜘蛛可用爱卡螨。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j58",
+  "type": "judge",
+  "q": "铁线莲的重剪一般在冬末早春，腋芽萌动前进行。",
+  "options": {},
+  "a": "√"
+ },
+ {
+  "id": "j59",
+  "type": "judge",
+  "q": "非栽植季节栽植落叶树木，应根据不同树种的特性，保持树型，宜适当增加修剪量，可剪去枝条的1/3-1/5。",
+  "options": {},
+  "a": "×"
+ },
+ {
+  "id": "j60",
+  "type": "judge",
+  "q": "树木定植前一般会及时检查枝叶分布，修剪树冠枝叶，以减少蒸腾。",
+  "options": {},
+  "a": "√"
+ }
+];
+
+/* ==================== 常量 ==================== */
+const LS_STATE = 'shuatibank_state_v1';
+const LS_IMPORTED = 'shuatibank_imported_v1';
+const TYPE_NAME = { single: '单选', multiple: '多选', judge: '判断' };
+const MODE_NAME = { seq: '顺序刷题', rand: '随机抽测', wrong: '错题攻坚' };
+const DEFAULTS = {
+  seqIdx: {}, randSet: [], randIdx: 0,
+  recSeq: {}, recRand: {},
+  wrong: [], fav: [], streak: {},
+  stats: { answered: 0, correct: 0 },
+  back: false
+};
+
+/* ==================== 存储（全部容错） ==================== */
+function loadJSON(key, dft) {
+  try {
+    var s = localStorage.getItem(key);
+    if (!s) return dft;
+    return JSON.parse(s);
+  } catch (e) { return dft; }
+}
+function saveJSON(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { /* 忽略 */ }
+}
+function loadState() {
+  var s = loadJSON(LS_STATE, null) || {};
+  var st = {};
+  for (var k in DEFAULTS) {
+    if (Object.prototype.hasOwnProperty.call(DEFAULTS, k)) {
+      st[k] = (s[k] !== undefined && s[k] !== null) ? s[k] : DEFAULTS[k];
+    }
+  }
+  st.seqIdx = (st.seqIdx && typeof st.seqIdx === 'object') ? st.seqIdx : {};
+  st.randSet = Array.isArray(st.randSet) ? st.randSet.filter(function (x) { return typeof x === 'string'; }) : [];
+  st.randIdx = typeof st.randIdx === 'number' ? st.randIdx : 0;
+  st.recSeq = (st.recSeq && typeof st.recSeq === 'object' && !Array.isArray(st.recSeq)) ? st.recSeq : {};
+  st.recRand = (st.recRand && typeof st.recRand === 'object' && !Array.isArray(st.recRand)) ? st.recRand : {};
+  st.wrong = Array.isArray(st.wrong) ? st.wrong.filter(function (x) { return typeof x === 'string'; }) : [];
+  st.fav = Array.isArray(st.fav) ? st.fav.filter(function (x) { return typeof x === 'string'; }) : [];
+  st.streak = (st.streak && typeof st.streak === 'object') ? st.streak : {};
+  st.stats = (st.stats && typeof st.stats === 'object') ? st.stats : { answered: 0, correct: 0 };
+  st.stats.answered = typeof st.stats.answered === 'number' ? st.stats.answered : 0;
+  st.stats.correct = typeof st.stats.correct === 'number' ? st.stats.correct : 0;
+  st.back = !!st.back;
+  return st;
+}
+function saveState() {
+  /* 同步当前模式的答题记录 */
+  if (mode === 'seq') S.recSeq[typeFilter] = rec;
+  else if (mode === 'rand') S.recRand = rec;
+  saveJSON(LS_STATE, S);
+}
+
+/* ==================== 全局状态 ==================== */
+var S = loadState();
+var imported = (function () {
+  var arr = loadJSON(LS_IMPORTED, []);
+  return Array.isArray(arr) ? arr : [];
+})();
+var wrongSet = new Set(S.wrong);
+var favSet = new Set(S.fav);
+
+var bank = [];        // 规范化后的全部题目
+var bankMap = {};     // id -> 题目
+var mode = null;      // null | 'seq' | 'rand' | 'wrong'
+var typeFilter = 'all';
+var list = [];        // 当前题 id 列表
+var idx = 0;          // 当前题在 list 中的下标
+var rec = {};         // qid -> {sel:[], judged:bool, ok:bool|null}
+var finished = false; // 是否在结果页
+var autoTimer = null; // 自动跳题定时器
+var toastTimer = null;
+
+/* ==================== 题目规范化 ==================== */
+function normalizeQuestion(raw, fallbackId) {
+  raw = (raw && typeof raw === 'object') ? raw : {};
+  var q = String(raw.q === undefined || raw.q === null ? '' : raw.q).replace(/\s+/g, ' ').trim();
+  var a = String(raw.a === undefined || raw.a === null ? '' : raw.a).trim().toUpperCase().replace(/\s+/g, '');
+  var options = {};
+  if (raw.options && typeof raw.options === 'object') {
+    ['A', 'B', 'C', 'D'].forEach(function (k) {
+      if (raw.options[k] !== undefined && raw.options[k] !== null) {
+        options[k] = String(raw.options[k]).replace(/\s+/g, ' ').trim();
+      }
+    });
+  }
+  var type = raw.type;
+  if (!type) {
+    if (Object.keys(options).length === 0 && (a === '√' || a === '×')) type = 'judge';
+    else if (a.length > 1 && /^[A-D]+$/.test(a)) type = 'multiple';
+    else type = 'single';
+  }
+  if (type === 'single') {
+    a = /^[A-D]$/.test(a) ? a : '';
+  } else if (type === 'multiple') {
+    a = /^[A-D]{1,4}$/.test(a) ? a.split('').sort().join('') : '';
+  } else if (type === 'judge') {
+    a = (a === '√' || a === '×' || /^[A-D]$/.test(a)) ? a : '';
+  } else {
+    type = 'single'; a = '';
+  }
+  var id = (raw.id !== undefined && raw.id !== null && String(raw.id).trim() !== '') ? String(raw.id) : fallbackId;
+  return { id: id, type: type, q: q, options: options, a: a };
+}
+
+function rebuildBank() {
+  var seen = new Set();
+  var items = QUESTION_BANK.concat(imported);
+  bank = [];
+  items.forEach(function (raw, i) {
+    var q = normalizeQuestion(raw, 'auto-' + (i + 1));
+    var id = q.id, n = 1;
+    while (seen.has(id)) { id = q.id + '-' + (n++); }
+    q.id = id;
+    seen.add(id);
+    bank.push(q);
+  });
+  bankMap = {};
+  bank.forEach(function (q) { bankMap[q.id] = q; });
+}
+
+/* ==================== 工具 ==================== */
+function escapeHtml(s) {
+  return String(s === undefined || s === null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+function cur() {
+  if (idx < 0 || idx >= list.length) return null;
+  return bankMap[list[idx]];
+}
+function getRec(qid) {
+  if (!rec[qid]) rec[qid] = { sel: [], judged: false, ok: null };
+  return rec[qid];
+}
+function correctLetters(q) {
+  if (!q.a) return [];
+  if (q.type === 'judge') {
+    if (q.a === '√') return ['A'];
+    if (q.a === '×') return ['B'];
+  }
+  return q.a.split('');
+}
+function correctRate() {
+  return S.stats.answered > 0 ? Math.round(S.stats.correct / S.stats.answered * 100) : 0;
+}
+function clamp(n, lo, hi) {
+  if (hi < lo) return 0;
+  return Math.max(lo, Math.min(n, hi));
+}
+function saveIdx() {
+  if (mode === 'seq') S.seqIdx[typeFilter] = idx;
+  if (mode === 'rand') S.randIdx = idx;
+  saveState();
+}
+function toast(msg) {
+  var t = document.getElementById('toastBox');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toastBox';
+    t.className = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { t.classList.remove('show'); }, 1800);
+}
+
+/* ==================== 模式启动 ==================== */
+function persistCurrent() {
+  /* 离开当前模式前保存进度与答题记录 */
+  if (mode === 'seq') { S.seqIdx[typeFilter] = idx; S.recSeq[typeFilter] = rec; saveState(); }
+  else if (mode === 'rand') { S.randIdx = idx; S.recRand = rec; saveState(); }
+}
+function startSeq(filter) {
+  persistCurrent();
+  typeFilter = filter || 'all';
+  mode = 'seq';
+  finished = false;
+  list = bank.filter(function (q) {
+    if (typeFilter === 'all') return true;
+    if (typeFilter === 'fav') return favSet.has(q.id);
+    return q.type === typeFilter;
+  }).map(function (q) { return q.id; });
+  idx = clamp(S.seqIdx[typeFilter] || 0, 0, list.length - 1);
+  rec = (S.recSeq[typeFilter] && typeof S.recSeq[typeFilter] === 'object') ? S.recSeq[typeFilter] : {};
+  saveState();
+  render();
+}
+function startRand(forceNew) {
+  persistCurrent();
+  mode = 'rand';
+  finished = false;
+  if (forceNew || S.randSet.length === 0 || S.randIdx >= S.randSet.length - 1) {
+    /* 随机抽取时按题干去重：PDF 中存在少量重复题，避免同一题干被抽中两次 */
+    var pool = shuffle(bank.map(function (q) { return q.id; }));
+    var seenQ = new Set();
+    var pool2 = [];
+    pool.forEach(function (id) {
+      var qq = bankMap[id];
+      if (qq && !seenQ.has(qq.q)) { seenQ.add(qq.q); pool2.push(id); }
+    });
+    S.randSet = pool2.slice(0, 50);
+    S.randIdx = 0;
+    S.recRand = {};
+  }
+  list = S.randSet;
+  idx = clamp(S.randIdx, 0, list.length - 1);
+  rec = (S.recRand && typeof S.recRand === 'object') ? S.recRand : {};
+  saveState();
+  render();
+}
+function startWrong() {
+  persistCurrent();
+  mode = 'wrong';
+  finished = false;
+  rec = {};
+  list = S.wrong.slice();
+  idx = 0;
+  render();
+}
+function startBack() {
+  S.back = true;
+  saveState();
+  startSeq('all');
+}
+function goHome() {
+  clearTimeout(autoTimer); autoTimer = null;
+  persistCurrent();
+  mode = null;
+  finished = false;
+  list = [];
+  render();
+}
+function switchFilter(f) {
+  clearTimeout(autoTimer); autoTimer = null;
+  startSeq(f);
+}
+function toggleBack() {
+  S.back = !S.back;
+  saveState();
+  if (mode) render();
+  else renderHome();
+}
+
+/* ==================== 答题逻辑 ==================== */
+function tapOption(letter) {
+  var q = cur();
+  if (!q) return;
+  var r = getRec(q.id);
+  /* 无答案题 / 背题模式：点击即已读，自动下一题 */
+  if (!q.a || S.back) {
+    if (r.judged) return;
+    r.sel = [letter];
+    r.judged = true;
+    r.ok = null;
+    r.read = true;
+    render();
+    scheduleNext(400);
+    return;
+  }
+  if (r.judged) return;
+  if (q.type === 'multiple') {
+    var i = r.sel.indexOf(letter);
+    if (i >= 0) r.sel.splice(i, 1);
+    else r.sel.push(letter);
+    renderOpts();
+    renderSubmitBar();
+    return;
+  }
+  /* 单选 / 判断：立即判定 */
+  r.sel = [letter];
+  r.judged = true;
+  var corr = correctLetters(q);
+  r.ok = corr.length > 0 && corr.indexOf(letter) >= 0;
+  afterJudge(q, r);
+}
+function submitMulti() {
+  var q = cur();
+  if (!q || q.type !== 'multiple') return;
+  if (!q.a || S.back) return; /* 无答案/背题已读逻辑 */
+  var r = getRec(q.id);
+  if (r.judged) return;
+  if (r.sel.length === 0) { toast('请先选择至少一个选项'); return; }
+  r.judged = true;
+  var corr = correctLetters(q);
+  var sorted = r.sel.slice().sort().join('');
+  r.ok = corr.length > 0 && sorted === corr.slice().sort().join('');
+  afterJudge(q, r);
+}
+function afterJudge(q, r) {
+  if (r.ok) {
+    S.stats.answered++;
+    S.stats.correct++;
+    S.streak[q.id] = (S.streak[q.id] || 0) + 1;
+    if (wrongSet.has(q.id) && S.streak[q.id] >= 2) {
+      removeWrong(q.id);
+      toast('已连续答对 2 次，移出错题本 ✓');
+    }
+    render();
+    scheduleNext(400);
+  } else {
+    S.stats.answered++;
+    S.streak[q.id] = 0;
+    addWrong(q.id);
+    render();
+  }
+  saveState();
+}
+function addWrong(qid) {
+  if (!wrongSet.has(qid)) {
+    wrongSet.add(qid);
+    S.wrong.push(qid);
+    saveState();
+  }
+}
+function removeWrong(qid) {
+  if (wrongSet.has(qid)) {
+    wrongSet.delete(qid);
+    S.wrong = S.wrong.filter(function (x) { return x !== qid; });
+    saveState();
+  }
+}
+function scheduleNext(delay) {
+  clearTimeout(autoTimer);
+  autoTimer = setTimeout(function () {
+    autoTimer = null;
+    next();
+  }, delay);
+}
+function next() {
+  clearTimeout(autoTimer); autoTimer = null;
+  if (mode === 'wrong') { list = S.wrong.slice(); }
+  if (list.length === 0) { render(); return; }
+  if (idx >= list.length - 1) { finish(); return; }
+  idx++;
+  saveIdx();
+  render();
+}
+function prev() {
+  clearTimeout(autoTimer); autoTimer = null;
+  if (idx > 0) {
+    idx--;
+    saveIdx();
+    render();
+  }
+}
+function jumpTo(i) {
+  closeSheet();
+  clearTimeout(autoTimer); autoTimer = null;
+  if (i < 0 || i >= list.length) return;
+  idx = i;
+  saveIdx();
+  render();
+}
+function finish() {
+  finished = true;
+  if (mode === 'seq') { S.seqIdx[typeFilter] = 0; S.recSeq[typeFilter] = {}; }
+  if (mode === 'rand') { S.randSet = []; S.randIdx = 0; S.recRand = {}; }
+  saveState();
+  render();
+}
+function restartCurrent() {
+  finished = false;
+  if (mode === 'seq') {
+    rec = {};
+    idx = 0;
+    S.recSeq[typeFilter] = {};
+    saveIdx();
+    render();
+  }
+  else if (mode === 'rand') { startRand(true); }
+  else if (mode === 'wrong') { startWrong(); }
+}
+function toggleFav() {
+  var q = cur();
+  if (!q) return;
+  if (favSet.has(q.id)) {
+    favSet.delete(q.id);
+    S.fav = S.fav.filter(function (x) { return x !== q.id; });
+  } else {
+    favSet.add(q.id);
+    S.fav.push(q.id);
+  }
+  saveState();
+  renderQuiz();
+}
+
+/* ==================== 渲染：主路由 ==================== */
+function render() {
+  if (mode === null) renderHome();
+  else if (finished) renderResult();
+  else renderQuiz();
+}
+function renderHome() {
+  var app = document.getElementById('app');
+  var acc = S.stats.answered;
+  var rate = correctRate();
+  app.innerHTML =
+    '<div class="home">' +
+    '<div class="home-head">' +
+    '<span class="home-title">📖 理论题库</span>' +
+    '<button class="home-import" onclick="openImport()">导入题库(JSON)</button>' +
+    '</div>' +
+    '<div class="stats-card">' +
+    '<div class="stats-item"><div class="stats-num dark">' + acc + '</div><div class="stats-label">已刷题数</div></div>' +
+    '<div class="stats-item"><div class="stats-num">' + rate + '%</div><div class="stats-label">正确率</div></div>' +
+    '<div class="stats-item"><div class="stats-num red">' + S.wrong.length + '</div><div class="stats-label">错题本</div></div>' +
+    '<div class="stats-item"><div class="stats-num blue">' + S.fav.length + '</div><div class="stats-label">收藏</div></div>' +
+    '</div>' +
+    '<div class="mode-card" onclick="startSeq(\'all\')">' +
+    '<div class="mode-ico">📚</div>' +
+    '<div class="mode-info"><div class="mode-name">顺序刷题</div>' +
+    '<div class="mode-desc">按题型顺序练习 · 自动记忆上次进度</div></div>' +
+    '<div class="mode-arrow">›</div></div>' +
+    '<div class="mode-card" onclick="startRand()">' +
+    '<div class="mode-ico">🎲</div>' +
+    '<div class="mode-info"><div class="mode-name">随机抽测</div>' +
+    '<div class="mode-desc">随机抽取 50 题快速模拟</div></div>' +
+    '<div class="mode-arrow">›</div></div>' +
+    '<div class="mode-card" onclick="startWrong()">' +
+    '<div class="mode-ico">🎯</div>' +
+    '<div class="mode-info"><div class="mode-name">错题攻坚' +
+    (S.wrong.length > 0 ? '<span class="mode-badge">' + S.wrong.length + '</span>' : '') + '</div>' +
+    '<div class="mode-desc">连续答对 2 次自动移出错题本</div></div>' +
+    '<div class="mode-arrow">›</div></div>' +
+    '<div class="mode-card" onclick="startBack()">' +
+    '<div class="mode-ico">💡</div>' +
+    '<div class="mode-info"><div class="mode-name">背题浏览</div>' +
+    '<div class="mode-desc">直接高亮正确答案 · 快速浏览记忆</div></div>' +
+    '<div class="mode-arrow">›</div></div>' +
+    '<div class="home-foot">' +
+    '<button class="home-reset" onclick="openBackup()">备份 / 恢复数据</button>' +
+    '<button class="home-reset" onclick="openReset()">重置进度</button>' +
+    '<div class="home-tip">内置 ' + bank.length + ' 题 · 首次打开后支持离线使用</div>' +
+    '</div></div>';
+}
+function renderQuiz() {
+  var q = cur();
+  if (!q || list.length === 0) { renderEmpty(); return; }
+  var r = getRec(q.id);
+  var app = document.getElementById('app');
+  var title = MODE_NAME[mode] || '';
+  var sub = (idx + 1) + '/' + list.length;
+  if (mode === 'seq') { title += ' · ' + (typeFilter === 'all' ? '全部' : typeFilter === 'fav' ? '收藏' : TYPE_NAME[typeFilter]); }
+  sub += ' · 正确率 ' + correctRate() + '%';
+  var chips = '';
+  if (mode === 'seq') {
+    var filters = [['all', '全部'], ['single', '单选'], ['multiple', '多选'], ['judge', '判断'], ['fav', '收藏']];
+    chips = '<div class="chips">' + filters.map(function (f) {
+      return '<button class="chip' + (typeFilter === f[0] ? ' on' : '') + '" onclick="switchFilter(\'' + f[0] + '\')">' + f[1] + '</button>';
+    }).join('') + '</div>';
+  }
+  var noAns = '';
+  if (!q.a) {
+    noAns = '<div class="noanswer"><span class="na-ico">⚠️</span>本题暂无标准答案，仅供浏览</div>';
+  }
+  var badgeCls = q.type === 'multiple' ? ' m' : (q.type === 'judge' ? ' j' : '');
+  var fb = '';
+  if (r.judged && q.a) {
+    if (r.ok) fb = '<div class="fb fb-ok">✓ 回答正确</div>';
+    else {
+      var ansTxt = q.type === 'judge' ? (q.a === '√' ? '正确(√)' : '错误(×)') : q.a;
+      fb = '<div class="fb fb-bad">✕ 回答错误，正确答案：' + escapeHtml(ansTxt) + '</div>';
+    }
+  }
+  var progPct = list.length > 0 ? Math.round((idx + 1) / list.length * 100) : 0;
+  app.innerHTML =
+    '<div class="quiz">' +
+    '<div class="qheader">' +
+    '<button class="hbtn gray" onclick="goHome()">‹</button>' +
+    '<div class="qtitle"><div class="qt1">' + escapeHtml(title) + '</div><div class="qt2">' + sub + '</div></div>' +
+    '<div class="hbtns">' +
+    '<button class="hbtn' + (S.back ? ' on' : '') + '" onclick="toggleBack()">' + (S.back ? '背题中' : '背题') + '</button>' +
+    '<button class="hbtn" onclick="openImport()" style="color:#576B95">导入</button>' +
+    '</div></div>' +
+    '<div class="qbody">' +
+    '<div class="progress"><div class="progress-in" style="width:' + progPct + '%"></div></div>' +
+    chips +
+    '<div class="qcard">' +
+    '<div class="qmeta"><span class="qbadge' + badgeCls + '">' + TYPE_NAME[q.type] + '</span>' +
+    '<span class="qno">第 ' + (idx + 1) + ' 题 / 共 ' + list.length + ' 题</span>' +
+    (favSet.has(q.id) ? '<span class="qfav">★ 已收藏</span>' : '') +
+    '</div>' +
+    noAns +
+    '<div class="qtext">' + escapeHtml(q.q) + '</div>' +
+    '<div class="opts" id="optBox"></div>' +
+    fb +
+    '</div></div>' +
+    '<div class="submitbar" id="submitBar"></div>' +
+    '<div class="bottombar">' +
+    '<button class="bbtn" onclick="prev()">‹ 上一题</button>' +
+    '<button class="bbtn' + (favSet.has(q.id) ? ' faved' : '') + '" id="favBtn" onclick="toggleFav()">' + (favSet.has(q.id) ? '★ 已收藏' : '☆ 收藏') + '</button>' +
+    '<button class="bbtn" onclick="openSheet()">☰ 题卡</button>' +
+    '<button class="bbtn main" onclick="next()">下一题 ›</button>' +
+    '</div></div>';
+  renderOpts();
+  renderSubmitBar();
+}
+function judgeOptions(q) {
+  /* 判断题固定渲染 正确/错误 两个选项 */
+  if (q.type === 'judge') return { A: '正确', B: '错误' };
+  return q.options;
+}
+function renderOpts() {
+  var q = cur();
+  var box = document.getElementById('optBox');
+  if (!q || !box) return;
+  var r = getRec(q.id);
+  var opts = judgeOptions(q);
+  var corr = correctLetters(q);
+  var html = '';
+  Object.keys(opts).forEach(function (L) {
+    var sel = r.sel.indexOf(L) >= 0;
+    var isAns = corr.indexOf(L) >= 0;
+    var cls = 'opt';
+    if (r.judged && q.a) {
+      if (isAns) cls += ' opt-ok';
+      else if (sel) cls += ' opt-bad';
+      else cls += ' opt-dim';
+    } else if (r.judged) {
+      cls += ' opt-dim'; /* 已读（无答案/背题） */
+    } else if (sel) {
+      cls += ' opt-sel';
+    } else if (S.back && isAns) {
+      cls += ' opt-ans';
+    }
+    var mark = '';
+    if (r.judged && q.a && isAns) mark = '<span class="opt-mark ok">✓</span>';
+    if (r.judged && q.a && !isAns && sel) mark = '<span class="opt-mark bad">✕</span>';
+    html += '<div class="' + cls + '" onclick="tapOption(\'' + L + '\')">' +
+      '<span class="opt-letter">' + L + '</span>' +
+      '<span class="opt-text">' + escapeHtml(opts[L]) + '</span>' +
+      mark + '</div>';
+  });
+  box.innerHTML = html;
+}
+function renderSubmitBar() {
+  var q = cur();
+  var bar = document.getElementById('submitBar');
+  if (!bar) return;
+  var r = q ? getRec(q.id) : null;
+  var show = q && q.type === 'multiple' && q.a && !S.back && r && !r.judged;
+  bar.innerHTML = show
+    ? '<button class="submit-btn" onclick="submitMulti()">确认提交' +
+      (r.sel.length > 0 ? '（已选 ' + r.sel.length + ' 项）' : '') + '</button>'
+    : '';
+}
+function renderResult() {
+  var app = document.getElementById('app');
+  var ok = 0, bad = 0, read = 0, un = 0;
+  list.forEach(function (id) {
+    var r = rec[id];
+    if (!r || !r.judged) un++;
+    else if (r.ok === true) ok++;
+    else if (r.ok === false) bad++;
+    else read++;
+  });
+  var total = list.length;
+  var rate = (ok + bad) > 0 ? Math.round(ok / (ok + bad) * 100) : 0;
+  var emoji = rate >= 90 ? '🏆' : rate >= 60 ? '🎉' : '💪';
+  var bigCls = 'res-big' + (rate >= 90 ? '' : (rate < 60 ? ' blue' : ''));
+  var againTxt = mode === 'rand' ? '再抽一组' : (mode === 'wrong' ? '再刷一轮' : '重新开始');
+  var detail =
+    '<div class="res-detail">' +
+    '<div class="rd-row"><span>本组题数</span><b>' + total + '</b></div>' +
+    '<div class="rd-row"><span>答对</span><b style="color:#07C160">' + ok + '</b></div>' +
+    '<div class="rd-row"><span>答错</span><b style="color:#FA5151">' + bad + '</b></div>' +
+    (read > 0 ? '<div class="rd-row"><span>已浏览（无答案）</span><b>' + read + '</b></div>' : '') +
+    (un > 0 ? '<div class="rd-row"><span>未作答</span><b>' + un + '</b></div>' : '') +
+    '<div class="rd-row"><span>本组正确率</span><b>' + rate + '%</b></div>' +
+    '</div>';
+  var againBtn = '';
+  if (!(mode === 'wrong' && S.wrong.length === 0)) {
+    againBtn = '<button class="res-btn" onclick="restartCurrent()">' + againTxt + '</button>';
+  }
+  app.innerHTML =
+    '<div class="result">' +
+    '<div class="res-emoji">' + emoji + '</div>' +
+    '<div class="' + bigCls + '">' + rate + '%</div>' +
+    '<div class="res-sub">' + (mode === 'wrong' && S.wrong.length === 0 ? '错题本已清空，太棒了！' : '答对 ' + ok + ' 题 · 答错 ' + bad + ' 题 · 共 ' + total + ' 题') + '</div>' +
+    detail +
+    againBtn +
+    '<button class="res-btn plain" onclick="goHome()">返回首页</button>' +
+    '</div>';
+}
+function renderEmpty() {
+  var app = document.getElementById('app');
+  if (mode === 'wrong' && S.wrong.length === 0) {
+    app.innerHTML =
+      '<div class="empty">' +
+      '<div class="empty-emoji">🎉</div>' +
+      '<div class="empty-title">错题本已清空</div>' +
+      '<div class="empty-desc">所有错题已连续答对 2 次并移出，继续保持！</div>' +
+      '<button class="empty-btn" onclick="goHome()">返回首页</button></div>';
+  } else if (mode === 'seq' && typeFilter === 'fav' && S.fav.length === 0) {
+    app.innerHTML =
+      '<div class="empty">' +
+      '<div class="empty-emoji">⭐</div>' +
+      '<div class="empty-title">暂无收藏题目</div>' +
+      '<div class="empty-desc">刷题时点击底部「收藏」即可加入收藏夹</div>' +
+      '<button class="empty-btn" onclick="goHome()">返回首页</button></div>';
+  } else {
+    app.innerHTML =
+      '<div class="empty">' +
+      '<div class="empty-emoji">📭</div>' +
+      '<div class="empty-title">暂无题目</div>' +
+      '<div class="empty-desc">当前筛选下没有题目</div>' +
+      '<button class="empty-btn" onclick="goHome()">返回首页</button></div>';
+  }
+}
+
+/* ==================== 答题卡抽屉 ==================== */
+function openSheet() {
+  var root = document.getElementById('sheetRoot');
+  if (!root) {
+    root = document.createElement('div');
+    root.id = 'sheetRoot';
+    document.body.appendChild(root);
+  }
+  var ok = 0, bad = 0, read = 0;
+  list.forEach(function (id) {
+    var r = rec[id];
+    if (!r || !r.judged) return;
+    if (r.ok === true) ok++;
+    else if (r.ok === false) bad++;
+    else read++;
+  });
+  var grid = list.map(function (id, i) {
+    var r = rec[id];
+    var cls = 'sc';
+    if (i === idx) cls += ' cur';
+    if (r && r.judged) {
+      if (r.ok === true) cls += ' ok';
+      else if (r.ok === false) cls += ' bad';
+      else cls += ' read';
+    }
+    var star = favSet.has(id) ? '<span class="star">★</span>' : '';
+    return '<button class="' + cls + '" onclick="jumpTo(' + i + ')">' + (i + 1) + star + '</button>';
+  }).join('');
+  root.innerHTML =
+    '<div class="sheet-mask show" onclick="closeSheet()"></div>' +
+    '<div class="sheet show">' +
+    '<div class="sheet-head"><span class="sheet-title">答题卡</span>' +
+    '<span class="sheet-sub">共 ' + list.length + ' 题 · 答对 ' + ok + ' · 答错 ' + bad + '</span>' +
+    '<button class="sheet-close" onclick="closeSheet()">收起 ▲</button></div>' +
+    '<div class="sheet-grid">' + grid + '</div>' +
+    '<div class="sheet-legend">' +
+    '<span><i class="lg" style="background:#07C160"></i>答对</span>' +
+    '<span><i class="lg" style="background:#FA5151"></i>答错</span>' +
+    '<span><i class="lg" style="background:#D8D8DA"></i>已读</span>' +
+    '<span><i class="lg" style="background:#F2F3F5"></i>未答</span>' +
+    '<span><i class="lg" style="background:#FFFFFF;box-shadow:inset 0 0 0 2px #07C160"></i>当前</span>' +
+    '</div></div>';
+}
+function closeSheet() {
+  var root = document.getElementById('sheetRoot');
+  if (root) root.innerHTML = '';
+}
+
+/* ==================== 导入补充题库 ==================== */
+function openImport() {
+  closeModal();
+  var root = document.getElementById('modalRoot');
+  if (!root) {
+    root = document.createElement('div');
+    root.id = 'modalRoot';
+    document.body.appendChild(root);
+  }
+  root.innerHTML =
+    '<div class="modal-mask" onclick="if(event.target===this)closeModal()">' +
+    '<div class="modal">' +
+    '<div class="modal-title">导入补充题库 (JSON)</div>' +
+    '<div class="modal-desc">支持粘贴 JSON 数组或选择 .json 文件。格式示例：' +
+    '<code>[{"id":"s51","type":"single","q":"题干…","options":{"A":"…","B":"…","C":"…","D":"…"},"a":"B"}]</code>' +
+    '（<code>type</code> 可省略自动识别；<code>a</code> 为空视为无答案题；重复题干自动跳过）</div>' +
+    '<div class="file-row">' +
+    '<button class="file-btn" onclick="document.getElementById(\'impFile\').click()">📁 选择文件</button>' +
+    '<span class="file-name" id="impFileName">未选择文件</span>' +
+    '<input type="file" id="impFile" accept=".json,application/json,text/plain" style="display:none" onchange="onImpFile(this)">' +
+    '</div>' +
+    '<textarea id="impText" placeholder="或在此粘贴 JSON：&#10;[{&quot;id&quot;:&quot;s51&quot;,&quot;type&quot;:&quot;single&quot;,&quot;q&quot;:&quot;题干&quot;,&quot;options&quot;:{&quot;A&quot;:&quot;…&quot;},&quot;a&quot;:&quot;B&quot;}]"></textarea>' +
+    '<div class="modal-actions">' +
+    '<button class="mbtn cancel" onclick="closeModal()">取消</button>' +
+    '<button class="mbtn ok" onclick="applyImport()">导入</button>' +
+    '</div></div></div>';
+}
+var impFileContent = '';
+function onImpFile(input) {
+  var f = input.files && input.files[0];
+  if (!f) return;
+  document.getElementById('impFileName').textContent = f.name;
+  var reader = new FileReader();
+  reader.onload = function () {
+    impFileContent = String(reader.result || '');
+    var ta = document.getElementById('impText');
+    if (ta) ta.value = impFileContent;
+  };
+  reader.onerror = function () { toast('文件读取失败'); };
+  reader.readAsText(f, 'utf-8');
+}
+function applyImport() {
+  var ta = document.getElementById('impText');
+  var text = ta ? ta.value : '';
+  if (!text.trim()) {
+    if (impFileContent) text = impFileContent;
+    else { toast('请先粘贴 JSON 或选择文件'); return; }
+  }
+  var data;
+  try { data = JSON.parse(text); }
+  catch (e) { toast('JSON 解析失败：' + e.message); return; }
+  if (!Array.isArray(data)) {
+    if (data && Array.isArray(data.questions)) data = data.questions;
+    else if (data && Array.isArray(data.bank)) data = data.bank;
+    else { toast('格式错误：应为题目数组'); return; }
+  }
+  var existQ = new Set(bank.map(function (x) { return x.q; }));
+  var existId = new Set(bank.map(function (x) { return x.id; }));
+  var add = [], ok = 0, skip = 0, bad = 0;
+  data.forEach(function (raw, i) {
+    if (!raw || typeof raw !== 'object' || raw.q === undefined || raw.q === null || !String(raw.q).trim()) { bad++; return; }
+    var nq = normalizeQuestion(raw, 'imp-' + (imported.length + add.length + 1));
+    if (existQ.has(nq.q)) { skip++; return; }
+    var id = nq.id, n = 1;
+    while (existId.has(id)) { id = nq.id + '-' + (n++); }
+    nq.id = id;
+    existId.add(id);
+    existQ.add(nq.q);
+    add.push(nq);
+    ok++;
+  });
+  if (add.length > 0) {
+    imported = imported.concat(add);
+    saveJSON(LS_IMPORTED, imported);
+    rebuildBank();
+  }
+  closeModal();
+  var msg = '导入完成：新增 ' + ok + ' 题';
+  if (skip > 0) msg += '，跳过重复 ' + skip + ' 题';
+  if (bad > 0) msg += '，无效 ' + bad + ' 条';
+  toast(msg);
+  if (mode === null) renderHome();
+}
+
+/* ==================== 重置进度（二次确认） ==================== */
+var resetStage = 0;
+var resetTimer = null;
+function openReset() {
+  resetStage = 0;
+  renderResetModal();
+}
+function renderResetModal() {
+  var root = document.getElementById('modalRoot');
+  if (!root) {
+    root = document.createElement('div');
+    root.id = 'modalRoot';
+    document.body.appendChild(root);
+  }
+  var btnHtml = resetStage === 0
+    ? '<button class="mbtn danger" onclick="resetStage1()">确定重置</button>'
+    : '<button class="mbtn danger" onclick="resetStage2()">再次点击确认重置（' + resetStage + 's）</button>';
+  var desc = resetStage === 0
+    ? '将清空：刷题进度、正确率统计、错题本、收藏、连续答对记录。此操作不可恢复！'
+    : '为防止误触，请再次点击确认。';
+  root.innerHTML =
+    '<div class="modal-mask" onclick="if(event.target===this){closeModal();resetStage=0;clearTimeout(resetTimer);}">' +
+    '<div class="modal">' +
+    '<div class="modal-title">重置进度</div>' +
+    '<div class="modal-desc">' + desc + '</div>' +
+    '<div class="modal-actions">' +
+    '<button class="mbtn cancel" onclick="closeModal();resetStage=0;clearTimeout(resetTimer);">取消</button>' +
+    btnHtml +
+    '</div></div></div>';
+}
+function resetStage1() {
+  resetStage = 3;
+  renderResetModal();
+  clearTimeout(resetTimer);
+  resetTimer = setInterval(function () {
+    resetStage--;
+    if (resetStage <= 0) { clearInterval(resetTimer); renderResetModal(); }
+    else { renderResetModal(); }
+  }, 1000);
+}
+function resetStage2() {
+  clearTimeout(resetTimer);
+  resetStage = 0;
+  try { localStorage.removeItem(LS_STATE); } catch (e) {}
+  try { localStorage.removeItem(LS_IMPORTED); } catch (e) {}
+  S = loadState();
+  imported = [];
+  wrongSet = new Set();
+  favSet = new Set();
+  rebuildBank();
+  closeModal();
+  mode = null;
+  finished = false;
+  rec = {};
+  list = [];
+  idx = 0;
+  render();
+  toast('进度已重置');
+}
+function closeModal() {
+  var root = document.getElementById('modalRoot');
+  if (root) root.innerHTML = '';
+}
+
+/* ==================== 备份 / 恢复数据（换手机/换链接不丢进度） ==================== */
+function openBackup() {
+  closeModal();
+  var root = document.getElementById('modalRoot');
+  if (!root) {
+    root = document.createElement('div');
+    root.id = 'modalRoot';
+    document.body.appendChild(root);
+  }
+  root.innerHTML =
+    '<div class="modal-mask" onclick="if(event.target===this)closeModal()">' +
+    '<div class="modal">' +
+    '<div class="modal-title">备份 / 恢复数据</div>' +
+    '<div class="modal-desc">导出备份文件保存到手机后，即使更换链接、更换手机，也能一键恢复全部进度、错题本与收藏。建议定期备份。</div>' +
+    '<div class="modal-actions">' +
+    '<button class="mbtn ok" onclick="exportBackup()">⬇️ 导出备份</button>' +
+    '<button class="mbtn cancel" onclick="document.getElementById(\'bakFile\').click()">⬆️ 从备份恢复</button>' +
+    '<input type="file" id="bakFile" accept=".json,application/json" style="display:none" onchange="restoreBackupFile(this)">' +
+    '</div></div></div>';
+}
+function exportBackup() {
+  try {
+    var data = { app: 'shuatibank', exportedAt: new Date().toISOString(), state: S, imported: imported };
+    var blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = '刷题备份-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () {
+      try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) {}
+    }, 200);
+    toast('备份已导出');
+  } catch (e) {
+    toast('导出失败，请用手机浏览器操作');
+  }
+}
+function restoreBackupFile(input) {
+  var f = input.files && input.files[0];
+  if (!f) return;
+  var reader = new FileReader();
+  reader.onload = function () { restoreBackup(String(reader.result || '')); };
+  reader.onerror = function () { toast('备份文件读取失败'); };
+  reader.readAsText(f, 'utf-8');
+}
+function restoreBackup(text) {
+  try {
+    var data = JSON.parse(text);
+    if (!data || typeof data !== 'object' || !data.state || typeof data.state !== 'object') {
+      toast('备份文件格式错误');
+      return;
+    }
+    saveJSON(LS_STATE, data.state);
+    saveJSON(LS_IMPORTED, Array.isArray(data.imported) ? data.imported : []);
+    S = loadState();
+    imported = Array.isArray(data.imported) ? data.imported : [];
+    wrongSet = new Set(S.wrong);
+    favSet = new Set(S.fav);
+    rebuildBank();
+    mode = null;
+    finished = false;
+    rec = {};
+    list = [];
+    idx = 0;
+    clearTimeout(autoTimer);
+    autoTimer = null;
+    closeModal();
+    render();
+    toast('数据恢复成功');
+  } catch (e) {
+    toast('恢复失败：' + e.message);
+  }
+}
+
+/* ==================== 微信端适配 ==================== */
+document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+document.addEventListener('dblclick', function (e) { e.preventDefault(); });
+document.addEventListener('touchmove', function (e) {
+  if (e.touches && e.touches.length > 1) e.preventDefault();
+}, { passive: false });
+
+/* ==================== 启动 ==================== */
+rebuildBank();
+render();
+
+/* ==================== 离线缓存注册（PWA：打开一次即永久离线） ==================== */
+if ('serviceWorker' in navigator && /^https?:$/.test(window.location.protocol)) {
+  window.addEventListener('load', function () {
+    try {
+      navigator.serviceWorker.register('./sw.js').catch(function () {});
+    } catch (e) { /* 不支持则忽略，应用仍可在线使用 */ }
+  });
+}
+</script>
+</body>
+</html>

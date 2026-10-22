@@ -1,0 +1,19 @@
+{
+  "name": "理论题库·以刷代练",
+  "short_name": "理论题库",
+  "description": "微信刷题神器：顺序刷题/随机抽测/错题攻坚/背题浏览，离线可用",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F7F7",
+  "theme_color": "#07C160",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
